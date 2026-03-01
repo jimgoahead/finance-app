@@ -3,20 +3,24 @@ import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
 import plotly.express as px
-import json
+import json # 💡 เพิ่มตัวช่วยจัดการกุญแจบน Cloud
 
 # ==========================================
-# ส่วนตั้งค่าการเชื่อมต่อ Google Sheets
+# ส่วนตั้งค่าการเชื่อมต่อ Google Sheets (รองรับ Cloud & Local)
 # ==========================================
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
 
 @st.cache_resource
 def init_connection():
+    # ตรวจสอบว่ามีข้อมูลกุญแจซ่อนอยู่ในระบบ Cloud ไหม
     if "google_credentials" in st.secrets:
+        # ถ้ารันบน Cloud ให้ดึงกุญแจจาก Streamlit Secrets
         creds_dict = json.loads(st.secrets["google_credentials"])
         creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
     else:
+        # ถ้ารันบนคอมบ้าน ให้ใช้ไฟล์ .json ปกติ
         creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
+        
     client = gspread.authorize(creds)
     return client
 
@@ -26,124 +30,154 @@ sheet = client.open(SHEET_NAME).sheet1
 
 def load_data():
     data = sheet.get_all_records()
-    return pd.DataFrame(data) if data else pd.DataFrame(columns=['ลำดับ', 'วันที่', 'รายการ', 'รายรับ', 'รายจ่าย', 'ช่องทาง', 'หมายเหตุ'])
+    if data:
+        return pd.DataFrame(data)
+    else:
+        return pd.DataFrame(columns=['ลำดับ', 'วันที่', 'รายการ', 'รายรับ', 'รายจ่าย', 'ช่องทาง', 'หมายเหตุ'])
 
 # ==========================================
-# ✨ การตกแต่ง UI สไตล์ใหม่ สดใสเพื่อมือถือ
+# การตั้งค่าหน้าเว็บและสีสัน
 # ==========================================
-st.set_page_config(page_title="บันทึกรายรับ-รายจ่าย", layout="centered")
+st.set_page_config(page_title="ระบบจัดการรายรับ-รายจ่าย", layout="centered")
 
-# CSS สำหรับปรับฟอนต์และพื้นหลังไล่เฉดสีฟ้า
 st.markdown("""
     <style>
-    /* พื้นหลัง Gradient สีฟ้าสดใส */
-    .stApp {
-        background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
-        background-attachment: fixed;
-    }
-    
-    /* ปรับขนาดตัวหนังสือหลักให้เล็กลงกะทัดรัด */
-    html, body, [class*="css"]  {
-        font-size: 15px; 
-        color: #0c4a6e;
-    }
-    
-    /* ปรับแต่งกล่อง Form ให้ดูนุ่มนวล */
-    .stForm {
-        background-color: rgba(255, 255, 255, 0.7) !important;
-        border-radius: 15px !important;
-        border: 1px solid #7dd3fc !important;
-        padding: 15px !important;
-    }
-
-    /* ปุ่มกดสีเขียวมินต์ */
     div.stButton > button:first-child {
-        background-color: #0ea5e9;
+        background-color: #4CAF50;
         color: white;
-        border-radius: 12px;
-        border: none;
-        width: 100%;
-        height: 45px;
+        border-radius: 8px;
+        height: 50px;
         font-weight: bold;
-    }
-    
-    /* หัวข้อ Title */
-    h1 {
-        color: #0369a1 !important;
-        font-size: 24px !important;
-        text-align: center;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        font-size: 18px;
     }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
-st.title("💎 บันทึกรายรับ-รายจ่าย")
+st.title("💸 แอปรายรับ-รายจ่าย ประจำวัน")
 
 df = load_data()
 
 # ==========================================
-# ส่วนที่ 1: บันทึกรายการใหม่
+# ส่วนที่ 1: ฟอร์มสำหรับกรอกข้อมูล
 # ==========================================
-st.markdown("##### 📝 บันทึกรายการใหม่")
-type_ = st.radio("เลือกประเภท", ["รายจ่าย 🔴", "รายรับ 🟢"], horizontal=True)
+st.markdown("### 📝 บันทึกรายการใหม่")
+
+type_ = st.radio("🔄 ประเภทรายการ", ["รายจ่าย 🔴", "รายรับ 🟢"], horizontal=True)
 
 with st.form("entry_form", clear_on_submit=True):
     date = st.date_input("📅 วันที่")
     
     if "รายจ่าย" in type_:
-        category_options = ["🍜 ค่าอาหาร/เครื่องดื่ม", "🛍️ ช้อปปิ้ง/ของใช้", "⚡ ค่าน้ำ/ค่าไฟ", "📱 ค่า Net/Streaming", "🧺 ค่าซักผ้า", "🐷 เงินเก็บส่วนกลาง", "🏫 ค่าเรียนลูก", "🎌 เงินเก็บค่าเที่ยวญี่ปุ่น", "🚗 เดินทาง/เติมน้ำมัน", "📝 อื่นๆ"]
+        category_options = [
+            "🍜 ค่าอาหาร/เครื่องดื่ม", 
+            "🛍️ ช้อปปิ้ง/ของใช้", 
+            "⚡ ค่าน้ำ/ค่าไฟ", 
+            "📱 ค่า Net/Streaming", 
+            "🧺 ค่าซักผ้า",          
+            "🐷 เงินเก็บส่วนกลาง", 
+            "🏫 ค่าเรียนลูก", 
+            "🎌 เงินเก็บค่าเที่ยวญี่ปุ่น", 
+            "🚗 เดินทาง/เติมน้ำมัน", 
+            "📝 อื่นๆ"
+        ]
     else:
-        category_options = ["💼 เงินเดือน", "👫 ค่าส่วนกลางจากปุ๊", "🎁 โบนัส/เงินพิเศษ", "💸 คืนเงิน/Cashback", "📈 ดอกเบี้ย/ปันผล", "📝 อื่นๆ"]
+        category_options = [
+            "💼 เงินเดือน", 
+            "👫 ค่าส่วนกลางจากปุ๊", 
+            "🎁 โบนัส/เงินพิเศษ", 
+            "💸 คืนเงิน/Cashback", 
+            "📈 ดอกเบี้ย/ปันผล", 
+            "📝 อื่นๆ"
+        ]
         
     category = st.selectbox("🏷️ หมวดหมู่", category_options)
+    
     amount = st.number_input("💰 จำนวนเงิน (บาท)", min_value=0.0, format="%.2f", step=100.0)
     
     if amount > 0:
-        st.markdown(f"✨ ยอดเงิน: **{amount:,.2f}** บาท")
+        st.markdown(f"<span style='color:#4CAF50; font-size:18px;'>✨ ยอดเงินที่ระบุ: <b>{amount:,.2f}</b> บาท</span>", unsafe_allow_html=True)
     
     channel_options = ["💵 เงินสด", "🦅 KTB", "🟢 K-BANK", "🟣 SCB", "💳 Credit Card", "📝 อื่นๆ"]
     channel = st.radio("🏦 ช่องทาง", channel_options, horizontal=True)
+    
     note = st.text_input("📝 หมายเหตุ (ถ้ามี)")
 
-    if st.form_submit_button("บันทึกข้อมูล"):
+    submitted = st.form_submit_button("บันทึกข้อมูลเลย!")
+    
+    if submitted:
         if amount <= 0:
-            st.warning("กรุณาระบุจำนวนเงินค่ะ")
+            st.warning("⚠️ เจ้านายอย่าลืมใส่จำนวนเงินให้ถูกต้องนะคะ!")
         else:
             all_values = sheet.get_all_values()
-            next_id = len(all_values)
+            next_id = len(all_values) if len(all_values) > 1 else 1
+            
             income_amt = amount if "รายรับ" in type_ else ""
             expense_amt = amount if "รายจ่าย" in type_ else ""
-            sheet.append_row([next_id, date.strftime("%Y-%m-%d"), category, income_amt, expense_amt, channel, note])
-            st.success("บันทึกสำเร็จแล้วค่ะ!")
+            
+            date_str = date.strftime("%Y-%m-%d")
+            
+            new_row = [next_id, date_str, category, income_amt, expense_amt, channel, note]
+            sheet.append_row(new_row)
+            
+            st.success(f"✨ เจนนี่บันทึกยอด {amount:,.2f} บาท สำเร็จแล้วค่ะ!")
             st.rerun()
 
 st.markdown("---")
 
 # ==========================================
-# ส่วนที่ 2: Dashboard (กราฟวงกลม)
+# ส่วนที่ 2: Dashboard วิเคราะห์ข้อมูล
 # ==========================================
-st.markdown("##### 📊 สรุปยอดเงิน")
+st.markdown("### 📊 Dashboard วิเคราะห์ข้อมูล")
 
 if not df.empty:
     df['รายรับ'] = pd.to_numeric(df['รายรับ'].replace('', 0, regex=True))
     df['รายจ่าย'] = pd.to_numeric(df['รายจ่าย'].replace('', 0, regex=True))
     df['วันที่'] = pd.to_datetime(df['วันที่'])
-    df['เดือน'] = df['วันที่'].dt.strftime('%Y-%m')
+    df['เดือน-ปี'] = df['วันที่'].dt.strftime('%Y-%m')
     
-    selected_month = st.selectbox("เลือกเดือน:", ["ทั้งหมด"] + sorted(df['เดือน'].unique().tolist(), reverse=True))
-    f_df = df if selected_month == "ทั้งหมด" else df[df['เดือน'] == selected_month]
+    months_list = ["ดูทั้งหมด"] + sorted(df['เดือน-ปี'].unique().tolist(), reverse=True)
+    selected_month = st.selectbox("📅 เลือกเดือนที่ต้องการดูข้อมูล:", months_list)
+    
+    if selected_month != "ดูทั้งหมด":
+        filtered_df = df[df['เดือน-ปี'] == selected_month]
+    else:
+        filtered_df = df
 
-    c1, c2, c3 = st.columns(3)
-    c1.metric("รายรับ", f"{f_df['รายรับ'].sum():,.0f}")
-    c2.metric("รายจ่าย", f"{f_df['รายจ่าย'].sum():,.0f}")
-    c3.metric("คงเหลือ", f"{(f_df['รายรับ'].sum() - f_df['รายจ่าย'].sum()):,.0f}")
+    total_income = filtered_df['รายรับ'].sum()
+    total_expense = filtered_df['รายจ่าย'].sum()
+    balance = total_income - total_expense
 
-    exp_df = f_df[f_df['รายจ่าย'] > 0]
-    if not exp_df.empty:
-        cat_data = exp_df.groupby('รายการ', as_index=False)['รายจ่าย'].sum()
-        fig = px.pie(cat_data, values='รายจ่าย', names='รายการ', hole=0.5, 
-                     color_discrete_sequence=px.colors.qualitative.Safe)
-        fig.update_layout(margin=dict(l=20, r=20, t=20, b=20), showlegend=True)
+    col1, col2 = st.columns(2)
+    col1.success(f"**รายรับรวม:**\n### ฿ {total_income:,.2f}")
+    col2.error(f"**รายจ่ายรวม:**\n### ฿ {total_expense:,.2f}")
+    st.info(f"**ยอดคงเหลือ:**\n## ฿ {balance:,.2f}")
+
+    st.markdown("#### 🏆 วิเคราะห์หมวดหมู่การใช้จ่าย")
+    
+    expense_df = filtered_df[filtered_df['รายจ่าย'] > 0]
+    
+    if not expense_df.empty:
+        cat_expense = expense_df.groupby('รายการ', as_index=False)['รายจ่าย'].sum().sort_values(by='รายจ่าย', ascending=False)
+        
+        top_cat = cat_expense.iloc[0]['รายการ']
+        top_amt = cat_expense.iloc[0]['รายจ่าย']
+        st.warning(f"🥇 **จ่ายหนักสุดในหมวด:** {top_cat} (฿ {top_amt:,.2f})")
+        
+        fig = px.pie(
+            cat_expense, 
+            values='รายจ่าย', 
+            names='รายการ', 
+            hole=0.4,
+            color_discrete_sequence=px.colors.qualitative.Pastel
+        )
+        fig.update_traces(textposition='inside', textinfo='percent+label', insidetextorientation='horizontal')
+        fig.update_layout(showlegend=False, margin=dict(t=10, b=10, l=10, r=10))
+        
         st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.write("ยังไม่มีรายจ่ายในเดือนนี้ค่ะ")
+
+    with st.expander("เปิดดูประวัติรายการทั้งหมด"):
+        st.dataframe(filtered_df[['วันที่', 'รายการ', 'รายรับ', 'รายจ่าย', 'ช่องทาง', 'หมายเหตุ']].sort_values(by='วันที่', ascending=False), use_container_width=True)
 else:
-    st.info("เริ่มบันทึกรายการแรกกันเลยค่ะ!")
+    st.info("ยังไม่มีข้อมูลเลยค่ะ เจ้านายลองบันทึกรายการแรกดูนะคะ!")
