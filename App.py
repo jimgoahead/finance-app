@@ -92,12 +92,12 @@ with st.form("entry_form", clear_on_submit=True):
         
     category = st.selectbox("🏷️ หมวดหมู่", category_options)
     
-    amount = st.number_input("💰 จำนวนเงิน (บาท)", min_value=0.0, format="%.2f", step=100.0)
+    amount = st.number_input("💰 จำนวนเงิน (บาท)", min_value=0.0, format="%.2f", step=100.0, value=None, placeholder="แตะเพื่อระบุยอดเงิน...")
     
     if amount > 0:
         st.markdown(f"<span style='color:#4CAF50; font-size:18px;'>✨ ยอดเงินที่ระบุ: <b>{amount:,.2f}</b> บาท</span>", unsafe_allow_html=True)
     
-    channel_options = ["💵 เงินสด", "🦅 KTB", "🟢 K-BANK", "🟣 SCB", "💳 Credit Card", "📝 อื่นๆ"]
+    channel_options = ["💳 Credit Card", "🦅 KTB", "🟢 K-BANK", "🟣 SCB", " 💵 เงินสด ", "📝 อื่นๆ"]
     channel = st.radio("🏦 ช่องทาง", channel_options, horizontal=True)
     
     note = st.text_input("📝 หมายเหตุ (ถ้ามี)")
