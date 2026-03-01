@@ -94,32 +94,21 @@ with st.form("entry_form", clear_on_submit=True):
     
     amount = st.number_input("💰 จำนวนเงิน (บาท)", min_value=0.0, format="%.2f", step=100.0, value=None, placeholder="แตะเพื่อระบุยอดเงิน...")
     
-    if amount > 0:
-        st.markdown(f"<span style='color:#4CAF50; font-size:18px;'>✨ ยอดเงินที่ระบุ: <b>{amount:,.2f}</b> บาท</span>", unsafe_allow_html=True)
-    
     channel_options = ["💳 Credit Card", "🦅 KTB", "🟢 K-BANK", "🟣 SCB", " 💵 เงินสด ", "📝 อื่นๆ"]
     channel = st.radio("🏦 ช่องทาง", channel_options, horizontal=True)
     
     note = st.text_input("📝 หมายเหตุ (ถ้ามี)")
 
-    submitted = st.form_submit_button("บันทึกข้อมูลเลย!")
-    
-    if submitted:
-        if amount <= 0:
-            st.warning("⚠️ เจ้านายอย่าลืมใส่จำนวนเงินให้ถูกต้องนะคะ!")
+    if st.form_submit_button("บันทึกข้อมูลลงตาราง"):
+        if amount is None or amount <= 0:
+            st.error("⚠️ เจ้านายอย่าลืมใส่จำนวนเงินนะคะ!")
         else:
             all_values = sheet.get_all_values()
-            next_id = len(all_values) if len(all_values) > 1 else 1
-            
+            next_id = len(all_values)
             income_amt = amount if "รายรับ" in type_ else ""
             expense_amt = amount if "รายจ่าย" in type_ else ""
-            
-            date_str = date.strftime("%Y-%m-%d")
-            
-            new_row = [next_id, date_str, category, income_amt, expense_amt, channel, note]
-            sheet.append_row(new_row)
-            
-            st.success(f"✨ เจนนี่บันทึกยอด {amount:,.2f} บาท สำเร็จแล้วค่ะ!")
+            sheet.append_row([next_id, date.strftime("%Y-%m-%d"), category, income_amt, expense_amt, channel, note])
+            st.success(f"✅ บันทึกยอด {amount:,.2f} บาท สำเร็จแล้วค่ะ!")
             st.rerun()
 
 st.markdown("---")
