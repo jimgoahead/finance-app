@@ -29,75 +29,56 @@ def load_data():
     return pd.DataFrame(data) if data else pd.DataFrame(columns=['ลำดับ', 'วันที่', 'รายการ', 'รายรับ', 'รายจ่าย', 'ช่องทาง', 'หมายเหตุ'])
 
 # ==========================================
-# ✨ การตกแต่ง UI ใหม่ (เน้นความชัดเจนและสีสันสดใส)
+# ✨ การตกแต่ง UI ตามคำสั่งพิเศษของเจ้านาย
 # ==========================================
 st.set_page_config(page_title="บันทึกรายรับ-รายจ่าย", layout="centered")
 
-# CSS แบบเจาะจงเพื่อแก้ปัญหาสีดำกลืนกัน
 st.markdown("""
     <style>
-    /* 1. พื้นหลังไล่เฉดสีฟ้าสดใส */
     .stApp {
         background: linear-gradient(180deg, #e0f2fe 0%, #ffffff 100%);
         background-attachment: fixed;
     }
     
-    /* 2. แก้ไข Dropdown (Selectbox) ให้พื้นขาว-ตัวอักษรดำ */
-    div[data-baseweb="select"] > div {
-        background-color: white !important;
-        color: #1e293b !important;
-        border-radius: 12px !important;
-        border: 2px solid #7dd3fc !important;
-    }
-    
-    /* แก้ไขลิสต์รายการที่เด้งลงมาให้เป็นสีขาว-ดำ */
-    div[data-baseweb="popover"] ul {
-        background-color: white !important;
-    }
-    div[data-baseweb="popover"] li {
-        color: #1e293b !important;
-    }
-
-    /* 3. ปรับแต่งช่องใส่ตัวเลขและข้อความ */
+    /* 1 & 2. ปรับช่อง Input (จำนวนเงิน/หมายเหตุ) เป็นสีขาว */
     div[data-baseweb="input"] {
         background-color: white !important;
         border-radius: 12px !important;
+        border: 1px solid #bae6fd !important;
     }
     input {
         color: #1e293b !important;
     }
 
-    /* 4. ปุ่มบันทึกข้อมูลสีฟ้าสดใส (ปุ่มนูน) */
+    /* 3. ปุ่มบันทึกข้อมูลสีม่วงอ่อน */
     div.stButton > button {
-        background-color: #0284c7 !important;
-        color: white !important;
+        background-color: #E9D5FF !important; /* Light Purple */
+        color: #581c87 !important; /* Dark Purple Text */
         border-radius: 15px !important;
-        border: none !important;
+        border: 2px solid #d8b4fe !important;
         width: 100% !important;
         height: 60px !important;
         font-weight: bold !important;
         font-size: 22px !important;
-        box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3) !important;
-        margin-top: 10px !important;
-    }
-    div.stButton > button:active {
-        transform: scale(0.97) !important;
-        box-shadow: 0 2px 5px rgba(2, 132, 199, 0.2) !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05) !important;
     }
 
-    /* 5. ปรับฟอนต์หัวข้อให้เด่นชัด */
-    h1, h2, h3, p {
-        color: #0369a1 !important;
-        font-weight: bold !important;
-    }
+    /* 4. Dashboard แยกสี 3 ช่อง (เขียวอ่อน / ส้มอ่อน / ฟ้าอ่อน) */
+    div[data-testid="column"]:nth-of-type(1) div[data-testid="stMetric"] { background-color: #dcfce7 !important; border: 1px solid #86efac !important; }
+    div[data-testid="column"]:nth-of-type(2) div[data-testid="stMetric"] { background-color: #ffedd5 !important; border: 1px solid #fdba74 !important; }
+    div[data-testid="column"]:nth-of-type(3) div[data-testid="stMetric"] { background-color: #e0f2fe !important; border: 1px solid #7dd3fc !important; }
     
-    /* ปรับแต่งการ์ด Metrics ใน Dashboard */
     div[data-testid="stMetric"] {
-        background-color: white !important;
-        border-radius: 15px !important;
         padding: 15px !important;
-        border: 1px solid #bae6fd !important;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important;
+        border-radius: 15px !important;
+    }
+
+    /* 5. คำว่าสัดส่วนค่าใช้จ่าย สีน้ำเงินออกฟ้า */
+    .donut-title {
+        color: #0284c7 !important;
+        font-weight: bold !important;
+        font-size: 22px !important;
+        margin-top: 20px !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -122,11 +103,13 @@ with st.form("entry_form", clear_on_submit=True):
         
     category = st.selectbox("🏷️ เลือกหมวดหมู่", category_options)
     
-    # 💡 ใช้ value=None และ placeholder เพื่อให้ช่องว่างเปล่าตอนเริ่มพิมพ์
+    # ช่องใส่เงิน (พื้นขาวตาม CSS ด้านบน)
     amount = st.number_input("💰 จำนวนเงิน (บาท)", min_value=0.0, format="%.2f", step=100.0, value=None, placeholder="แตะเพื่อระบุยอดเงิน...")
     
     channel_options = ["💵 เงินสด", "🦅 KTB", "🟢 K-BANK", "🟣 SCB", "💳 Credit Card", "📝 อื่นๆ"]
     channel = st.radio("🏦 ช่องทางรับ/จ่าย", channel_options, horizontal=True)
+    
+    # ช่องหมายเหตุ (พื้นขาวตาม CSS ด้านบน)
     note = st.text_input("📝 หมายเหตุ (ถ้ามี)")
 
     if st.form_submit_button("บันทึกข้อมูลลงตาราง"):
@@ -144,7 +127,7 @@ with st.form("entry_form", clear_on_submit=True):
 st.markdown("---")
 
 # ==========================================
-# ส่วนที่ 2: Dashboard (กราฟและสรุปยอด)
+# ส่วนที่ 2: Dashboard
 # ==========================================
 st.markdown("### 📊 Dashboard สรุปยอด")
 
@@ -157,26 +140,31 @@ if not df.empty:
     selected_month = st.selectbox("📅 เลือกดูประวัติรายเดือน:", ["ทั้งหมด"] + sorted(df['เดือน'].unique().tolist(), reverse=True))
     f_df = df if selected_month == "ทั้งหมด" else df[df['เดือน'] == selected_month]
 
-    # การ์ดสรุปยอด
+    # การ์ดสรุปยอดแยกสี 3 ช่อง
     c1, c2, c3 = st.columns(3)
     c1.metric("รายรับ", f"{f_df['รายรับ'].sum():,.0f}")
     c2.metric("รายจ่าย", f"{f_df['รายจ่าย'].sum():,.0f}")
     c3.metric("คงเหลือ", f"{(f_df['รายรับ'].sum() - f_df['รายจ่าย'].sum()):,.0f}")
 
-    # กราฟโดนัท
+    # 6. กราฟโดนัทพื้นหลังขาว
     exp_df = f_df[f_df['รายจ่าย'] > 0]
     if not exp_df.empty:
-        st.markdown("#### 🍩 สัดส่วนค่าใช้จ่าย")
+        st.markdown('<p class="donut-title">🍩 สัดส่วนค่าใช้จ่าย</p>', unsafe_allow_html=True)
         cat_data = exp_df.groupby('รายการ', as_index=False)['รายจ่าย'].sum()
-        
-        # ปรับกราฟให้ตัวหนังสือแนวนอน อ่านง่าย ไม่เอียง
         fig = px.pie(cat_data, values='รายจ่าย', names='รายการ', hole=0.5, 
                      color_discrete_sequence=px.colors.qualitative.Pastel)
-        fig.update_traces(textposition='inside', textinfo='percent+label', insidetextorientation='horizontal')
-        fig.update_layout(showlegend=False, margin=dict(l=10, r=10, t=10, b=10))
         
+        fig.update_traces(textposition='inside', textinfo='percent+label', insidetextorientation='horizontal')
+        
+        # ปรับพื้นหลังกราฟเป็นสีขาวตามสั่ง
+        fig.update_layout(
+            showlegend=False, 
+            margin=dict(l=10, r=10, t=10, b=10),
+            paper_bgcolor='white',
+            plot_bgcolor='white'
+        )
         st.plotly_chart(fig, use_container_width=True)
     else:
-        st.write("เดือนนี้ยังไม่มีรายจ่ายบันทึกไว้ค่ะ")
+        st.write("เดือนนี้ยังไม่มีรายจ่ายค่ะ")
 else:
-    st.info("เริ่มบันทึกรายการแรกกันเลยค่ะเจ้านาย!")
+    st.info("เจ้านายลองบันทึกรายการแรกดูนะคะ!")
