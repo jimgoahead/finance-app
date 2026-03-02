@@ -45,7 +45,7 @@ st.markdown("""
         border-radius: 8px;
         height: 50px;
         font-weight: bold;
-        font-size: 15px;
+        font-size: 18px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -252,6 +252,7 @@ if not df.empty:
             st.dataframe(filtered_df[cols_to_show].sort_values(by='วันที่', ascending=False), use_container_width=True)
 else:
     st.info("ยังไม่มีข้อมูลเลยค่ะ เจ้านายลองบันทึกรายการแรกดูนะคะ!")
+
 
 
 
