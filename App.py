@@ -95,7 +95,6 @@ with st.form("entry_form", clear_on_submit=True):
         
     category = st.selectbox("🏷️ หมวดหมู่", category_options)
     
-    # 💡 แก้ไขจุดที่ทำให้เกิด Error บรรทัดขาด
     if tourist_mode:
         st.markdown("🎌 **ข้อมูลสกุลเงินต่างประเทศ**")
         col_curr, col_rate = st.columns(2)
@@ -105,7 +104,6 @@ with st.form("entry_form", clear_on_submit=True):
             exchange_rate = st.number_input("เรทแลกเปลี่ยน", value=None, format="%.4f", step=0.0100, placeholder="ระบุเรท...")
         
         curr_symbol = currency.split(' ')[0]
-        # หั่นบรรทัดให้สั้นลง ป้องกันวงเล็บหาย
         amount_input = st.number_input(
             f"💰 จำนวนเงิน ({curr_symbol})", 
             min_value=0.0, 
@@ -115,7 +113,6 @@ with st.form("entry_form", clear_on_submit=True):
             placeholder=f"แตะระบุยอด {curr_symbol}..."
         )
     else:
-        # หั่นบรรทัดให้สั้นลง
         amount_input = st.number_input(
             "💰 จำนวนเงิน (บาท)", 
             min_value=0.0, 
@@ -187,12 +184,19 @@ if not df.empty:
             fig_pie.update_layout(showlegend=False, margin=dict(t=10, b=10, l=10, r=10))
             st.plotly_chart(fig_pie, use_container_width=True)
 
+            # 💡 แก้ไขบั๊กกราฟเส้นตรงนี้ค่ะ
             st.markdown("##### 📈 ยอดใช้จ่ายรายวัน")
-            daily_expense = filtered_df[filtered_df['รายจ่าย'] > 0].groupby(filtered_df['วันที่'].dt.strftime('%Y-%m-%d'), as_index=False)['รายจ่าย'].sum()
-            fig_line = px.line(daily_expense, x='วันที่', y='รายจ่าย', markers=True, text='รายจ่าย')
-            fig_line.update_traces(textposition="top center", texttemplate='%{text:,.0f}')
-            fig_line.update_layout(margin=dict(t=10, b=10, l=10, r=10), xaxis_title="วันที่", yaxis_title="ยอดเงิน (บาท)")
-            st.plotly_chart(fig_line, use_container_width=True)
+            exp_only = filtered_df[filtered_df['รายจ่าย'] > 0].copy()
+            if not exp_only.empty:
+                exp_only['วันที่_format'] = exp_only['วันที่'].dt.strftime('%Y-%m-%d')
+                daily_expense = exp_only.groupby('วันที่_format', as_index=False)['รายจ่าย'].sum()
+                
+                fig_line = px.line(daily_expense, x='วันที่_format', y='รายจ่าย', markers=True, text='รายจ่าย')
+                fig_line.update_traces(textposition="top center", texttemplate='%{text:,.0f}')
+                fig_line.update_layout(margin=dict(t=10, b=10, l=10, r=10), xaxis_title="วันที่", yaxis_title="ยอดเงิน (บาท)")
+                st.plotly_chart(fig_line, use_container_width=True)
+            else:
+                st.info("ยังไม่มีข้อมูลรายจ่ายสำหรับสร้างกราฟค่ะ")
 
             with st.expander("เปิดดูรายการทั้งหมดของทริปนี้"):
                 cols_to_show = ['วันที่', 'รายการ', 'รายจ่าย', 'ช่องทาง', 'หมายเหตุ']
