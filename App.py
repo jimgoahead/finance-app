@@ -59,6 +59,9 @@ df = load_data()
 # ==========================================
 st.markdown("### 📝 บันทึกรายการใหม่")
 
+# 💡 สวิตช์เปิด-ปิด โหมดต่างประเทศ (อยู่หน้า Form เพื่อให้ UI ปรับตามทันที)
+tourist_mode = st.toggle("✈️ โหมดนักท่องเที่ยว (ต่างประเทศ)")
+
 type_ = st.radio("🔄 ประเภทรายการ", ["รายจ่าย 🔴", "รายรับ 🟢"], horizontal=True)
 
 with st.form("entry_form", clear_on_submit=True):
@@ -89,7 +92,19 @@ with st.form("entry_form", clear_on_submit=True):
         
     category = st.selectbox("🏷️ หมวดหมู่", category_options)
     
-    amount = st.number_input("💰 จำนวนเงิน (บาท)", min_value=0.0, format="%.2f", step=100.0, value=None, placeholder="แตะเพื่อระบุยอดเงิน...")
+    # 💡 เปลี่ยนช่องกรอกเงินตามโหมดที่เลือก
+    if tourist_mode:
+        st.markdown("🎌 **ข้อมูลสกุลเงินต่างประเทศ**")
+        col_curr, col_rate = st.columns(2)
+        with col_curr:
+            currency = st.selectbox("สกุลเงิน", ["JPY (เยน)", "USD (ดอลลาร์)"])
+        with col_rate:
+            exchange_rate = st.number_input("เรทแลกเปลี่ยน", value=0.2400, format="%.4f", step=0.0100)
+        
+        amount_input = st.number_input(f"💰 จำนวนเงิน ({currency.split(' ')[0]})", min_value=0.0, format="%.2f", step=100.0, value=None, placeholder=f"แตะระบุยอด {currency.split(' ')[0]}...")
+        st.info("💡 ระบบจะคูณเรทแลกเปลี่ยนและบันทึกยอดเป็นเงินบาท (THB) ให้อัตโนมัติค่ะ")
+    else:
+        amount_input = st.number_input("💰 จำนวนเงิน (บาท)", min_value=0.0, format="%.2f", step=100.0, value=None, placeholder="แตะเพื่อระบุยอดเงิน...")
     
     channel_options = ["💳 Credit Card", "🦅 KTB", "🟢 K-BANK", "🟣 SCB", " 💵 เงินสด ", "📝อื่นๆ"]
     channel = st.radio("🏦 ช่องทาง", channel_options, horizontal=True)
@@ -97,15 +112,25 @@ with st.form("entry_form", clear_on_submit=True):
     note = st.text_input("📝 หมายเหตุ (ถ้ามี)")
 
     if st.form_submit_button("บันทึกข้อมูลลงตาราง"):
-        if amount is None or amount <= 0:
+        if amount_input is None or amount_input <= 0:
             st.error("⚠️ เจ้านายอย่าลืมใส่จำนวนเงินนะคะ!")
         else:
+            # 💡 ระบบคำนวณและเตรียมข้อความบันทึก
+            if tourist_mode:
+                final_thb_amount = amount_input * exchange_rate
+                curr_symbol = currency.split(' ')[0]
+                final_note = f"[{curr_symbol} {amount_input:,.2f} @{exchange_rate}] {note}".strip()
+            else:
+                final_thb_amount = amount_input
+                final_note = note
+
             all_values = sheet.get_all_values()
             next_id = len(all_values)
-            income_amt = amount if "รายรับ" in type_ else ""
-            expense_amt = amount if "รายจ่าย" in type_ else ""
-            sheet.append_row([next_id, date.strftime("%Y-%m-%d"), category, income_amt, expense_amt, channel, note])
-            st.success(f"✅ บันทึกยอด {amount:,.2f} บาท สำเร็จแล้วค่ะ!")
+            income_amt = final_thb_amount if "รายรับ" in type_ else ""
+            expense_amt = final_thb_amount if "รายจ่าย" in type_ else ""
+            
+            sheet.append_row([next_id, date.strftime("%Y-%m-%d"), category, income_amt, expense_amt, channel, final_note])
+            st.success(f"✅ บันทึกยอด {final_thb_amount:,.2f} บาท สำเร็จแล้วค่ะ!")
             st.rerun()
 
 st.markdown("---")
@@ -138,7 +163,7 @@ if not df.empty:
     col2.error(f"**รายจ่ายรวม:**\n### ฿ {total_expense:,.2f}")
     st.info(f"**ยอดคงเหลือ:**\n## ฿ {balance:,.2f}")
 
-    # 💡 เพิ่มส่วนแสดงยอดบิลบัตรเครดิตตรงนี้ค่ะ
+    # ยอดบิลบัตรเครดิต
     cc_expense = filtered_df[filtered_df['ช่องทาง'] == '💳 Credit Card']['รายจ่าย'].sum()
     st.markdown(f"""
     <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-left: 5px solid #64748b; padding: 15px; border-radius: 10px; margin-top: 10px; margin-bottom: 20px;">
