@@ -3,7 +3,7 @@ import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
 import plotly.express as px
-import json # 💡 เพิ่มตัวช่วยจัดการกุญแจบน Cloud
+import json 
 
 # ==========================================
 # ส่วนตั้งค่าการเชื่อมต่อ Google Sheets (รองรับ Cloud & Local)
@@ -12,13 +12,10 @@ scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapi
 
 @st.cache_resource
 def init_connection():
-    # ตรวจสอบว่ามีข้อมูลกุญแจซ่อนอยู่ในระบบ Cloud ไหม
     if "google_credentials" in st.secrets:
-        # ถ้ารันบน Cloud ให้ดึงกุญแจจาก Streamlit Secrets
         creds_dict = json.loads(st.secrets["google_credentials"])
         creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
     else:
-        # ถ้ารันบนคอมบ้าน ให้ใช้ไฟล์ .json ปกติ
         creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
         
     client = gspread.authorize(creds)
@@ -69,24 +66,24 @@ with st.form("entry_form", clear_on_submit=True):
     
     if "รายจ่าย" in type_:
         category_options = [
-            "🍜 ค่าอาหาร/เครื่องดื่ม", 
-            "🛍️ ช้อปปิ้ง/ของใช้", 
-            "⚡ ค่าน้ำ/ค่าไฟ", 
-            "📱 ค่า Net/Streaming", 
+            "🍜 ค่าอาหาร/เครื่องดื่ม",
+            "🛍️ ช้อปปิ้ง/ของใช้",
+            "⚡ ค่าน้ำ/ค่าไฟ",
+            "📱 ค่า Net/Streaming",
             "🧺 ค่าซักผ้า",          
-            "🐷 เงินเก็บส่วนกลาง", 
-            "🏫 ค่าเรียนลูก", 
-            "🎌 เงินเก็บค่าเที่ยวญี่ปุ่น", 
-            "🚗 เดินทาง/เติมน้ำมัน", 
+            "🐷 เงินเก็บส่วนกลาง",
+            "🏫 ค่าเรียนลูก",
+            "🎌 เงินเก็บค่าเที่ยวญี่ปุ่น",
+            "🚗 เดินทาง/เติมน้ำมัน",
             "📝 อื่นๆ"
         ]
     else:
         category_options = [
-            "💼 เงินเดือน", 
-            "👫 ค่าส่วนกลางจากปุ๊", 
-            "🎁 โบนัส/เงินพิเศษ", 
-            "💸 คืนเงิน/Cashback", 
-            "📈 ดอกเบี้ย/ปันผล", 
+            "💼 เงินเดือน",
+            "👫 ค่าส่วนกลางจากปุ๊",
+            "🎁 โบนัส/เงินพิเศษ",
+            "💸 คืนเงิน/Cashback",
+            "📈 ดอกเบี้ย/ปันผล",
             "📝 อื่นๆ"
         ]
         
@@ -94,7 +91,7 @@ with st.form("entry_form", clear_on_submit=True):
     
     amount = st.number_input("💰 จำนวนเงิน (บาท)", min_value=0.0, format="%.2f", step=100.0, value=None, placeholder="แตะเพื่อระบุยอดเงิน...")
     
-    channel_options = ["💳 Credit Card", "🦅 KTB", "🟢 K-BANK", "🟣 SCB", " 💵 เงินสด ", "📝 อื่นๆ"]
+    channel_options = ["💳 Credit Card", "🦅 KTB", "🟢 K-BANK", "🟣 SCB", " 💵 เงินสด ", "📝อื่นๆ"]
     channel = st.radio("🏦 ช่องทาง", channel_options, horizontal=True)
     
     note = st.text_input("📝 หมายเหตุ (ถ้ามี)")
@@ -140,6 +137,15 @@ if not df.empty:
     col1.success(f"**รายรับรวม:**\n### ฿ {total_income:,.2f}")
     col2.error(f"**รายจ่ายรวม:**\n### ฿ {total_expense:,.2f}")
     st.info(f"**ยอดคงเหลือ:**\n## ฿ {balance:,.2f}")
+
+    # 💡 เพิ่มส่วนแสดงยอดบิลบัตรเครดิตตรงนี้ค่ะ
+    cc_expense = filtered_df[filtered_df['ช่องทาง'] == '💳 Credit Card']['รายจ่าย'].sum()
+    st.markdown(f"""
+    <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-left: 5px solid #64748b; padding: 15px; border-radius: 10px; margin-top: 10px; margin-bottom: 20px;">
+        <p style="margin:0; color: #475569; font-size: 16px;">💳 เตรียมจ่ายบิลบัตรเครดิต (รูดในเดือนนี้)</p>
+        <h3 style="margin:0; color: #0f172a;">฿ {cc_expense:,.2f}</h3>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.markdown("#### 🏆 วิเคราะห์หมวดหมู่การใช้จ่าย")
     
