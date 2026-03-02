@@ -226,7 +226,7 @@ if not df.empty:
         cc_expense = filtered_df[filtered_df['ช่องทาง'] == '💳 Credit Card']['รายจ่าย'].sum()
         st.markdown(f"""
         <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-left: 5px solid #64748b; padding: 15px; border-radius: 10px; margin-top: 10px; margin-bottom: 20px;">
-            <p style="margin:0; color: #475569; font-size: 16px;">💳 ยอดเฉพาะบัตรเครดิต (รูดในเดือนนี้-อยู่ในรายจ่ายแล้ว)</p>
+            <p style="margin:0; color: #475569; font-size: 16px;">💳 ยอดบัตรเครดิต (รูดเดือนนี้-อยู่ในรายจ่ายรวมแล้ว)</p>
             <h3 style="margin:0; color: #0f172a;">฿ {cc_expense:,.2f}</h3>
         </div>
         """, unsafe_allow_html=True)
@@ -252,4 +252,5 @@ if not df.empty:
             st.dataframe(filtered_df[cols_to_show].sort_values(by='วันที่', ascending=False), use_container_width=True)
 else:
     st.info("ยังไม่มีข้อมูลเลยค่ะ เจ้านายลองบันทึกรายการแรกดูนะคะ!")
+
 
