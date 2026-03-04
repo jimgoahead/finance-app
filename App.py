@@ -38,7 +38,6 @@ def load_data():
 # ==========================================
 st.set_page_config(page_title="ระบบจัดการรายรับ-รายจ่าย", layout="centered")
 
-# 💡 อัปเดต CSS ให้ปุ่มสีสวยขึ้นและเต็มจอในมือถือ
 st.markdown("""
     <style>
     /* ซ่อนหัวข้อช่องกรอกเสียงเพื่อให้ดูคลีนขึ้น */
@@ -88,7 +87,6 @@ with col1:
 with col2:
     process_btn = st.button("✨ แยกคำ", use_container_width=True)
 with col3:
-    # ปุ่มสีแดง (type="primary" จะดึงสีหลักของธีมมาใช้ ซึ่งมักจะเป็นสีแดง/ชมพู)
     clear_btn = st.button("❌ ล้างคำ", type="primary", use_container_width=True, on_click=clear_voice_text)
 
 # ระบบประมวลผลคำพูด
@@ -257,13 +255,14 @@ with st.form("entry_form", clear_on_submit=False):
             sheet.append_row([next_id, date.strftime("%Y-%m-%d"), category, income_amt, expense_amt, channel, final_note])
             st.success(f"✅ บันทึกยอด {final_thb_amount:,.2f} บาท สำเร็จแล้วค่ะ!")
             
-            # เคลียร์ค่าหลังจากบันทึกเสร็จ
+            # 💡 แก้ไขบั๊กตรงนี้: ใช้ del ลบออกจากหน่วยความจำแทนการกำหนดค่าเป็น ""
             st.session_state.pre_amount = None
             st.session_state.pre_note = ""
             st.session_state.pre_type = "รายจ่าย 🔴"
             st.session_state.pre_cat = "🍜 ค่าอาหาร/เครื่องดื่ม"
             st.session_state.pre_chan = " 💵 เงินสด "
-            st.session_state.voice_input_key = ""
+            if "voice_input_key" in st.session_state:
+                del st.session_state["voice_input_key"]
             
             st.rerun()
 
