@@ -67,7 +67,7 @@ st.markdown("""
     /* 1. ปุ่ม ✨ แยกคำ (สีเขียว) - ล็อกเป้าที่คอลัมน์แรก */
     div[data-testid="stHorizontalBlock"]:nth-of-type(1) div[data-testid="column"]:nth-of-type(1) button {
         background-color: #4CAF50 !important; 
-        color: white !important;
+        color: #4CAF50 !important;
         border-radius: 8px !important;
         height: 50px !important;
         font-weight: bold !important;
@@ -78,7 +78,7 @@ st.markdown("""
     /* 2. ปุ่ม ❌ ล้างคำ (สีแดง) - ล็อกเป้าที่คอลัมน์สอง */
     div[data-testid="stHorizontalBlock"]:nth-of-type(1) div[data-testid="column"]:nth-of-type(2) button {
         background-color: #f44336 !important; 
-        color: white !important;
+        color: #f44336 !important;
         border-radius: 8px !important;
         height: 50px !important;
         font-weight: bold !important;
@@ -405,3 +405,4 @@ if not df.empty:
             st.dataframe(filtered_df[cols_to_show].sort_values(by='วันที่', ascending=False), use_container_width=True)
 else:
     st.info("ยังไม่มีข้อมูลเลยค่ะ เจ้านายลองบันทึกรายการแรกดูนะคะ!")
+
