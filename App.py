@@ -107,33 +107,15 @@ def clear_voice_text():
         st.session_state.voice_input_key = ""
 
 st.markdown("### 🎙️ สั่งงานด้วยเสียง (Magic Input)")
-
 st.info("💡 **วิธีใช้:** แตะช่องสีฟ้า กดไมค์ที่คีย์บอร์ดเพื่อพูด แล้วกดปุ่ม ✨ แยกคำ")
 
 voice_input = st.text_input("ข้อความเสียง:", key="voice_input_key", placeholder="แตะที่นี่แล้วพูด... เช่น: รายจ่ายค่าอาหาร 150 บาท จ่ายด้วย Kbank")
-st.markdown("""
-    <style>
-    /* บังคับสีปุ่มแยกคำ (ปุ่มแรกในแถว) */
-    div[data-testid="column"]:nth-of-type(1) button {
-        background-color: #4CAF50 !important;
-        color: white !important;
-        border: none !important;
-    }
-    /* บังคับสีปุ่มล้างคำ (ปุ่มที่สองในแถว) */
-    div[data-testid="column"]:nth-of-type(2) button {
-        background-color: #f44336 !important;
-        color: white !important;
-        border: none !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
+
 col1, col2 = st.columns(2)
 with col1:
     process_btn = st.button("✨ แยกคำ", use_container_width=True)
 with col2:
     clear_btn = st.button("❌ ล้างคำ", use_container_width=True, on_click=clear_voice_text)
-st.markdown("""
-    
 
 if process_btn and st.session_state.voice_input_key:
     text = st.session_state.voice_input_key.lower()
@@ -287,7 +269,3 @@ if not df.empty:
             st.dataframe(f_df[['วันที่', 'รายการ', 'รายรับ', 'รายจ่าย', 'ช่องทาง', 'หมายเหตุ']].sort_values(by='วันที่', ascending=False), use_container_width=True)
 else:
     st.info("ยังไม่มีข้อมูลค่ะ")
-
-
-
-
