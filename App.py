@@ -82,14 +82,13 @@ st.info("💡 **วิธีใช้:** แตะที่ช่องด้า
 voice_input = st.text_input("ข้อความเสียง:", key="voice_input_key", placeholder="แตะที่นี่แล้วพูด... เช่น: รายจ่ายค่าอาหาร 150 บาท...")
 
 # จัดเรียงปุ่ม 3 ปุ่มให้อยู่แถวเดียวกัน
-col1, col2, col3 = st.columns(3)
+col1, col2 = st.columns(2)
 with col1:
-    speak_btn = st.button("🎙️ กดเพื่อพูด", use_container_width=True)
-with col2:
     process_btn = st.button("✨ แยกคำ", use_container_width=True)
-with col3:
+with col2:
     # ปุ่มสีแดง (type="primary" จะดึงสีหลักของธีมมาใช้ ซึ่งมักจะเป็นสีแดง/ชมพู)
     clear_btn = st.button("❌ ล้างคำ", type="primary", use_container_width=True, on_click=clear_voice_text)
+    
 
 # ระบบประมวลผลคำพูด
 if process_btn and st.session_state.voice_input_key:
@@ -364,3 +363,4 @@ if not df.empty:
             st.dataframe(filtered_df[cols_to_show].sort_values(by='วันที่', ascending=False), use_container_width=True)
 else:
     st.info("ยังไม่มีข้อมูลเลยค่ะ เจ้านายลองบันทึกรายการแรกดูนะคะ!")
+
