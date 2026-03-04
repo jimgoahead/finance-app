@@ -34,7 +34,7 @@ def load_data():
         return pd.DataFrame(columns=['ลำดับ', 'วันที่', 'รายการ', 'รายรับ', 'รายจ่าย', 'ช่องทาง', 'หมายเหตุ'])
 
 # ==========================================
-# การตั้งค่าหน้าเว็บและสีสัน
+# การตั้งค่าหน้าเว็บและสีสัน (CSS Magic)
 # ==========================================
 st.set_page_config(page_title="ระบบจัดการรายรับ-รายจ่าย", layout="centered")
 
@@ -44,14 +44,50 @@ st.markdown("""
     div[data-testid="stTextInput"] label {
         display: none;
     }
-    /* ปรับแต่งปุ่มบันทึกด้านล่างสุด */
+    
+    /* 1. แต่งช่อง Text Box เสียงให้เป็นสีฟ้าโดดเด่น */
+    div[data-testid="stTextInput"]:has(input[placeholder*="แตะที่นี่แล้วพูด"]) div[data-baseweb="base-input"] {
+        background-color: #e0f7fa !important;
+        border: 2px solid #00acc1 !important;
+        border-radius: 8px !important;
+        padding: 5px !important;
+    }
+    div[data-testid="stTextInput"]:has(input[placeholder*="แตะที่นี่แล้วพูด"]) input {
+        color: #00838f !important;
+        font-weight: bold !important;
+        font-size: 16px !important;
+    }
+
+    /* 2. แต่งปุ่ม ✨ แยกคำ (คอลัมน์แรก) ให้เป็นสีเขียว */
+    div[data-testid="column"]:nth-child(1) button {
+        background-color: #4CAF50 !important;
+        color: white !important;
+        border-radius: 8px !important;
+        font-weight: bold !important;
+        font-size: 16px !important;
+        border: none !important;
+    }
+
+    /* 3. แต่งปุ่ม ❌ ล้างคำ (คอลัมน์ที่สอง) ให้เป็นสีแดง */
+    div[data-testid="column"]:nth-child(2) button {
+        background-color: #f44336 !important;
+        color: white !important;
+        border-radius: 8px !important;
+        font-weight: bold !important;
+        font-size: 16px !important;
+        border: none !important;
+    }
+
+    /* 4. ปรับแต่งปุ่มบันทึกด้านล่างสุด (ฟอร์มหลัก) ให้เป็นสีน้ำเงิน */
     div[data-testid="stFormSubmitButton"] > button {
-        background-color: #4CAF50;
-        color: white;
-        border-radius: 8px;
-        height: 50px;
-        font-weight: bold;
-        font-size: 18px;
+        background-color: #1976D2 !important; 
+        color: white !important;
+        border-radius: 8px !important;
+        height: 50px !important;
+        font-weight: bold !important;
+        font-size: 18px !important;
+        border: none !important;
+        width: 100% !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -75,19 +111,17 @@ def clear_voice_text():
     st.session_state.voice_input_key = ""
 
 st.markdown("### 🎙️ สั่งงานด้วยเสียง (Magic Input)")
-st.info("💡 **วิธีใช้:** แตะที่ช่องด้านล่าง กดไมค์ที่คีย์บอร์ดเพื่อพูด (หรือแก้คำผิด) แล้วกดปุ่ม ✨ แยกคำ")
+st.info("💡 **วิธีใช้:** แตะช่องสีฟ้าด้านล่าง กดไมค์ที่คีย์บอร์ดมือถือเพื่อพูด แล้วกดปุ่ม ✨ แยกคำ")
 
-# ช่องรับข้อความเสียง (เก็บค่าลง session_state ทันที)
-voice_input = st.text_input("ข้อความเสียง:", key="voice_input_key", placeholder="แตะที่นี่แล้วพูด... เช่น: รายจ่ายค่าอาหาร 150 บาท...")
+# ช่องรับข้อความเสียง (สีฟ้า)
+voice_input = st.text_input("ข้อความเสียง:", key="voice_input_key", placeholder="แตะที่นี่แล้วพูด... เช่น: รายจ่ายค่าอาหาร 150 บาท จ่ายด้วย Kbank")
 
-# จัดเรียงปุ่ม 3 ปุ่มให้อยู่แถวเดียวกัน
-col1, col2, col3 = st.columns(3)
+# จัดเรียงปุ่ม 2 ปุ่มให้อยู่แถวเดียวกัน
+col1, col2 = st.columns(2)
 with col1:
-    speak_btn = st.button("🎙️ กดเพื่อพูด", use_container_width=True)
-with col2:
     process_btn = st.button("✨ แยกคำ", use_container_width=True)
-with col3:
-    clear_btn = st.button("❌ ล้างคำ", type="primary", use_container_width=True, on_click=clear_voice_text)
+with col2:
+    clear_btn = st.button("❌ ล้างคำ", use_container_width=True, on_click=clear_voice_text)
 
 # ระบบประมวลผลคำพูด
 if process_btn and st.session_state.voice_input_key:
@@ -255,7 +289,7 @@ with st.form("entry_form", clear_on_submit=False):
             sheet.append_row([next_id, date.strftime("%Y-%m-%d"), category, income_amt, expense_amt, channel, final_note])
             st.success(f"✅ บันทึกยอด {final_thb_amount:,.2f} บาท สำเร็จแล้วค่ะ!")
             
-            # 💡 แก้ไขบั๊กตรงนี้: ใช้ del ลบออกจากหน่วยความจำแทนการกำหนดค่าเป็น ""
+            # ล้างค่าในหน่วยความจำหลังบันทึกเสร็จ
             st.session_state.pre_amount = None
             st.session_state.pre_note = ""
             st.session_state.pre_type = "รายจ่าย 🔴"
