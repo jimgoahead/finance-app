@@ -40,64 +40,30 @@ st.set_page_config(page_title="ระบบจัดการรายรับ-
 
 # 💡 ล้างกฎเก่าทิ้ง และเขียนล็อกเป้าหมายใหม่ให้ปุ่มแต่ละปุ่มโดยเฉพาะ
 st.markdown("""
-    <style>
-    /* ซ่อนหัวข้อช่องกรอกเสียงเพื่อให้ดูคลีนขึ้น */
-    div[data-testid="stTextInput"] label {
-        display: none;
-    }
-    
-    /* แต่งช่อง Text Box เสียงให้เป็นสีฟ้าโดดเด่น และฟอนต์ดำ */
-    div[data-testid="stTextInput"]:has(input[placeholder*="แตะที่นี่แล้วพูด"]) div[data-baseweb="base-input"] {
-        background-color: #e0f7fa !important;
-        border: 2px solid #00acc1 !important;
-        border-radius: 8px !important;
-        padding: 5px !important;
-    }
-    div[data-testid="stTextInput"]:has(input[placeholder*="แตะที่นี่แล้วพูด"]) input {
-        color: #000000 !important; 
-        -webkit-text-fill-color: #000000 !important; 
-        font-weight: bold !important;
-        font-size: 16px !important;
-    }
-    div[data-testid="stTextInput"]:has(input[placeholder*="แตะที่นี่แล้วพูด"]) input::placeholder {
-        color: #555555 !important;
-        -webkit-text-fill-color: #555555 !important;
-    }
-
-    /* 1. ปุ่ม ✨ แยกคำ (สีเขียว) - ล็อกเป้าที่คอลัมน์แรก */
-    div[data-testid="stHorizontalBlock"]:nth-of-type(1) div[data-testid="column"]:nth-of-type(1) button {
-        background-color: #4CAF50 !important; 
-        color: #4CAF50 !important;
-        border-radius: 8px !important;
-        height: 50px !important;
-        font-weight: bold !important;
-        font-size: 18px !important;
-        border: none !important;
-    }
-
-    /* 2. ปุ่ม ❌ ล้างคำ (สีแดง) - ล็อกเป้าที่คอลัมน์สอง */
-    div[data-testid="stHorizontalBlock"]:nth-of-type(1) div[data-testid="column"]:nth-of-type(2) button {
-        background-color: #f44336 !important; 
-        color: #f44336 !important;
-        border-radius: 8px !important;
-        height: 50px !important;
-        font-weight: bold !important;
-        font-size: 18px !important;
-        border: none !important;
-    }
-
-    /* 3. ปุ่ม บันทึกข้อมูลลงตาราง (สีน้ำเงิน) - ล็อกเป้าปุ่มในฟอร์ม */
-    div[data-testid="stFormSubmitButton"] button {
-        background-color: #1976D2 !important; 
+<style>
+    /* 1. ปุ่ม ✨ แยกคำ (บังคับให้เป็นสีเขียว) */
+    button[kind="secondary"]:has(div p:contains("✨ แยกคำ")) {
+        background-color: #4CAF50 !important;
         color: white !important;
-        border-radius: 8px !important;
-        height: 50px !important;
-        font-weight: bold !important;
-        font-size: 18px !important;
         border: none !important;
-        width: 100% !important;
     }
-    </style>
+
+    /* 2. ปุ่ม ❌ ล้างคำ (บังคับให้เป็นสีแดง) */
+    button[kind="primary"]:has(div p:contains("❌ ล้างคำ")) {
+        background-color: #f44336 !important;
+        color: white !important;
+        border: none !important;
+    }
+
+    /* 3. ช่อง Text Box เสียง (สีฟ้า ฟอนต์ดำ) */
+    div[data-baseweb="base-input"]:has(input[placeholder*="แตะที่นี่แล้วพูด"]) {
+        background-color: #e0f7fa !important;
+    }
+    div[data-baseweb="base-input"]:has(input[placeholder*="แตะที่นี่แล้วพูด"]) input {
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important;
+    }
+</style>
 """, unsafe_allow_html=True)
 
 st.title("💸 แอปรายรับ-รายจ่าย ประจำวัน")
@@ -405,4 +371,5 @@ if not df.empty:
             st.dataframe(filtered_df[cols_to_show].sort_values(by='วันที่', ascending=False), use_container_width=True)
 else:
     st.info("ยังไม่มีข้อมูลเลยค่ะ เจ้านายลองบันทึกรายการแรกดูนะคะ!")
+
 
