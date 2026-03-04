@@ -121,7 +121,7 @@ st.markdown("### 🎙️ สั่งงานด้วยเสียง (Magic
         border: none !important;
     }
     </style>
-""", unsafe_allow_html=True)
+
 st.info("💡 **วิธีใช้:** แตะช่องสีฟ้า กดไมค์ที่คีย์บอร์ดเพื่อพูด แล้วกดปุ่ม ✨ แยกคำ")
 
 voice_input = st.text_input("ข้อความเสียง:", key="voice_input_key", placeholder="แตะที่นี่แล้วพูด... เช่น: รายจ่ายค่าอาหาร 150 บาท จ่ายด้วย Kbank")
@@ -286,5 +286,6 @@ if not df.empty:
             st.dataframe(f_df[['วันที่', 'รายการ', 'รายรับ', 'รายจ่าย', 'ช่องทาง', 'หมายเหตุ']].sort_values(by='วันที่', ascending=False), use_container_width=True)
 else:
     st.info("ยังไม่มีข้อมูลค่ะ")
+
 
 
