@@ -38,6 +38,7 @@ def load_data():
 # ==========================================
 st.set_page_config(page_title="ระบบจัดการรายรับ-รายจ่าย", layout="centered")
 
+# 💡 ล้างกฎเก่าทิ้ง และเขียนล็อกเป้าหมายใหม่ให้ปุ่มแต่ละปุ่มโดยเฉพาะ
 st.markdown("""
     <style>
     /* ซ่อนหัวข้อช่องกรอกเสียงเพื่อให้ดูคลีนขึ้น */
@@ -45,50 +46,48 @@ st.markdown("""
         display: none;
     }
     
-    /* 1. แต่งช่อง Text Box เสียงให้เป็นสีฟ้าโดดเด่น */
+    /* แต่งช่อง Text Box เสียงให้เป็นสีฟ้าโดดเด่น และฟอนต์ดำ */
     div[data-testid="stTextInput"]:has(input[placeholder*="แตะที่นี่แล้วพูด"]) div[data-baseweb="base-input"] {
         background-color: #e0f7fa !important;
         border: 2px solid #00acc1 !important;
         border-radius: 8px !important;
         padding: 5px !important;
     }
-    
-    /* 💡 แก้ไขสีฟอนต์ให้เป็นสีดำสนิท ทะลุ Dark Mode! */
     div[data-testid="stTextInput"]:has(input[placeholder*="แตะที่นี่แล้วพูด"]) input {
         color: #000000 !important; 
-        -webkit-text-fill-color: #000000 !important; /* บังคับสีดำบนมือถือ */
+        -webkit-text-fill-color: #000000 !important; 
         font-weight: bold !important;
         font-size: 16px !important;
     }
-    
-    /* 💡 ปรับสีคำใบ้ (Placeholder) ให้เข้มขึ้นอ่านง่าย */
     div[data-testid="stTextInput"]:has(input[placeholder*="แตะที่นี่แล้วพูด"]) input::placeholder {
         color: #555555 !important;
         -webkit-text-fill-color: #555555 !important;
     }
 
-    /* 2. แต่งปุ่ม ✨ แยกคำ (คอลัมน์แรก) ให้เป็นสีเขียว */
-    div[data-testid="column"]:nth-child(1) button {
-        background-color: #4CAF50 !important;
+    /* 1. ปุ่ม ✨ แยกคำ (สีเขียว) - ล็อกเป้าที่คอลัมน์แรก */
+    div[data-testid="stHorizontalBlock"]:nth-of-type(1) div[data-testid="column"]:nth-of-type(1) button {
+        background-color: #4CAF50 !important; 
         color: white !important;
         border-radius: 8px !important;
+        height: 50px !important;
         font-weight: bold !important;
-        font-size: 16px !important;
+        font-size: 18px !important;
         border: none !important;
     }
 
-    /* 3. แต่งปุ่ม ❌ ล้างคำ (คอลัมน์ที่สอง) ให้เป็นสีแดง */
-    div[data-testid="column"]:nth-child(2) button {
-        background-color: #f44336 !important;
+    /* 2. ปุ่ม ❌ ล้างคำ (สีแดง) - ล็อกเป้าที่คอลัมน์สอง */
+    div[data-testid="stHorizontalBlock"]:nth-of-type(1) div[data-testid="column"]:nth-of-type(2) button {
+        background-color: #f44336 !important; 
         color: white !important;
         border-radius: 8px !important;
+        height: 50px !important;
         font-weight: bold !important;
-        font-size: 16px !important;
+        font-size: 18px !important;
         border: none !important;
     }
 
-    /* 4. ปรับแต่งปุ่มบันทึกด้านล่างสุด (ฟอร์มหลัก) ให้เป็นสีน้ำเงิน */
-    div[data-testid="stFormSubmitButton"] > button {
+    /* 3. ปุ่ม บันทึกข้อมูลลงตาราง (สีน้ำเงิน) - ล็อกเป้าปุ่มในฟอร์ม */
+    div[data-testid="stFormSubmitButton"] button {
         background-color: #1976D2 !important; 
         color: white !important;
         border-radius: 8px !important;
@@ -122,8 +121,8 @@ def clear_voice_text():
 st.markdown("### 🎙️ สั่งงานด้วยเสียง (Magic Input)")
 st.info("💡 **วิธีใช้:** แตะช่องสีฟ้าด้านล่าง กดไมค์ที่คีย์บอร์ดมือถือเพื่อพูด แล้วกดปุ่ม ✨ แยกคำ")
 
-# ช่องรับข้อความเสียง (สีฟ้า ฟอนต์ดำ)
-voice_input = st.text_input("ข้อความเสียง:", key="voice_input_key", placeholder="แตะที่นี่แล้วพูด... เช่น: รายจ่ายค่าอาหาร 1500 บาท จ่ายด้วย Kbank หมายเหตุร้านโอโตยะ")
+# ช่องรับข้อความเสียง
+voice_input = st.text_input("ข้อความเสียง:", key="voice_input_key", placeholder="แตะที่นี่แล้วพูด... เช่น: รายจ่ายค่าอาหาร 150 บาท จ่ายด้วย Kbank")
 
 # จัดเรียงปุ่ม 2 ปุ่มให้อยู่แถวเดียวกัน
 col1, col2 = st.columns(2)
