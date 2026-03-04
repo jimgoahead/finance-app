@@ -116,6 +116,22 @@ with col1:
     process_btn = st.button("✨ แยกคำ", use_container_width=True)
 with col2:
     clear_btn = st.button("❌ ล้างคำ", use_container_width=True, on_click=clear_voice_text)
+st.markdown("""
+    <style>
+    /* บังคับสีปุ่มแยกคำ (ปุ่มแรกในแถว) */
+    div[data-testid="column"]:nth-of-type(1) button {
+        background-color: #4CAF50 !important;
+        color: white !important;
+        border: none !important;
+    }
+    /* บังคับสีปุ่มล้างคำ (ปุ่มที่สองในแถว) */
+    div[data-testid="column"]:nth-of-type(2) button {
+        background-color: #f44336 !important;
+        color: white !important;
+        border: none !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 if process_btn and st.session_state.voice_input_key:
     text = st.session_state.voice_input_key.lower()
@@ -269,3 +285,4 @@ if not df.empty:
             st.dataframe(f_df[['วันที่', 'รายการ', 'รายรับ', 'รายจ่าย', 'ช่องทาง', 'หมายเหตุ']].sort_values(by='วันที่', ascending=False), use_container_width=True)
 else:
     st.info("ยังไม่มีข้อมูลค่ะ")
+
