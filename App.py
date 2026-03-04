@@ -4,6 +4,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 import plotly.express as px
 import json 
+import re  # นำเข้าเครื่องมือแกะข้อความ
 
 # ==========================================
 # ส่วนตั้งค่าการเชื่อมต่อ Google Sheets
@@ -22,7 +23,7 @@ def init_connection():
     return client
 
 client = init_connection()
-SHEET_NAME = "Finance App" 
+SHEET_NAME = "Finance App" # ใช้ชีตหลักของเจ้านาย
 sheet = client.open(SHEET_NAME).sheet1
 
 def load_data():
@@ -55,16 +56,97 @@ st.title("💸 แอปรายรับ-รายจ่าย ประจำ
 df = load_data()
 
 # ==========================================
-# ส่วนที่ 1: ฟอร์มสำหรับกรอกข้อมูล
+# ส่วนที่ 1: ระบบสั่งงานด้วยเสียง (Voice Magic Input)
 # ==========================================
-st.markdown("### 📝 บันทึกรายการใหม่")
+# เตรียมหน่วยความจำให้แอปจำค่าที่แกะได้
+if 'pre_type' not in st.session_state: st.session_state.pre_type = "รายจ่าย 🔴"
+if 'pre_amount' not in st.session_state: st.session_state.pre_amount = None
+if 'pre_cat' not in st.session_state: st.session_state.pre_cat = "🍜 ค่าอาหาร/เครื่องดื่ม"
+if 'pre_chan' not in st.session_state: st.session_state.pre_chan = " 💵 เงินสด "
+if 'pre_note' not in st.session_state: st.session_state.pre_note = ""
 
-# สวิตช์เปิด-ปิด โหมดต่างประเทศ
+st.markdown("### 🎙️ สั่งงานด้วยเสียง (Magic Input)")
+st.info("💡 **วิธีใช้:** กดรูปไมค์ที่คีย์บอร์ด แล้วพูดเช่น *'รายจ่าย ค่าอาหาร 150 บาท จ่ายด้วย Kbank หมายเหตุ ร้านโอโตยะ'*")
+
+col_voice, col_btn = st.columns([3, 1])
+with col_voice:
+    voice_input = st.text_input("แตะเพื่อพูด:", label_visibility="collapsed", placeholder="พูดที่นี่...")
+with col_btn:
+    process_btn = st.button("✨ แยกคำ")
+
+if process_btn and voice_input:
+    text = voice_input.lower()
+    
+    # 1. แกะประเภท (Type)
+    if "รายรับ" in text:
+        st.session_state.pre_type = "รายรับ 🟢"
+    else:
+        st.session_state.pre_type = "รายจ่าย 🔴"
+        
+    # 2. แกะหมายเหตุ (Note) แบบสั่งได้
+    if "หมายเหตุ" in text:
+        parts = text.split("หมายเหตุ", 1)
+        st.session_state.pre_note = parts[1].strip()
+        text_to_search = parts[0] # ค้นหาข้อมูลอื่นจากข้อความก่อนคำว่าหมายเหตุ
+    else:
+        st.session_state.pre_note = "" # ถ้าไม่พูด ให้เว้นว่าง
+        text_to_search = text
+        
+    # 3. แกะจำนวนเงิน (Amount) ดึงตัวเลขตัวแรกที่เจอ
+    amounts = re.findall(r'\d+(?:,\d+)*(?:\.\d+)?', text_to_search)
+    if amounts:
+        st.session_state.pre_amount = float(amounts[0].replace(',', ''))
+        
+    # 4. แกะหมวดหมู่ (Category) โดยดักจากคีย์เวิร์ด
+    if "อาหาร" in text_to_search or "กิน" in text_to_search or "ข้าว" in text_to_search or "กาแฟ" in text_to_search:
+        st.session_state.pre_cat = "🍜 ค่าอาหาร/เครื่องดื่ม"
+    elif "เดินทาง" in text_to_search or "รถ" in text_to_search or "น้ำมัน" in text_to_search or "bts" in text_to_search:
+        st.session_state.pre_cat = "🚗 เดินทาง/เติมน้ำมัน"
+    elif "ช้อปปิ้ง" in text_to_search or "ของใช้" in text_to_search or "ซื้อ" in text_to_search or "เซเว่น" in text_to_search:
+        st.session_state.pre_cat = "🛍️ ช้อปปิ้ง/ของใช้"
+    elif "น้ำ" in text_to_search or "ไฟ" in text_to_search:
+        st.session_state.pre_cat = "⚡ ค่าน้ำ/ค่าไฟ"
+    elif "เน็ต" in text_to_search or "net" in text_to_search or "สตรีมมิ่ง" in text_to_search:
+        st.session_state.pre_cat = "📱 ค่า Net/Streaming"
+    elif "ซักผ้า" in text_to_search:
+        st.session_state.pre_cat = "🧺 ค่าซักผ้า"
+    elif "ลูก" in text_to_search or "เรียน" in text_to_search:
+        st.session_state.pre_cat = "🏫 ค่าเรียนลูก"
+    elif "เงินเดือน" in text_to_search:
+        st.session_state.pre_cat = "💼 เงินเดือน"
+    else:
+        st.session_state.pre_cat = "📝 อื่นๆ"
+
+    # 5. แกะช่องทาง (Channel)
+    if "kbank" in text_to_search or "กสิกร" in text_to_search or "เคแบงก์" in text_to_search:
+        st.session_state.pre_chan = "🟢 K-BANK"
+    elif "scb" in text_to_search or "ไทยพาณิชย์" in text_to_search:
+        st.session_state.pre_chan = "🟣 SCB"
+    elif "ktb" in text_to_search or "กรุงไทย" in text_to_search:
+        st.session_state.pre_chan = "🦅 KTB"
+    elif "บัตร" in text_to_search or "เครดิต" in text_to_search or "credit" in text_to_search:
+        st.session_state.pre_chan = "💳 Credit Card"
+    elif "เงินสด" in text_to_search or "สด" in text_to_search:
+        st.session_state.pre_chan = " 💵 เงินสด "
+    else:
+        st.session_state.pre_chan = " 💵 เงินสด " # ถ้าฟังไม่ออกให้เป็นเงินสดไว้ก่อน
+        
+    st.rerun() # สั่งรีเฟรชเพื่อนำข้อมูลลงฟอร์ม
+
+st.markdown("---")
+
+# ==========================================
+# ส่วนที่ 2: ฟอร์มตรวจสอบและบันทึก
+# ==========================================
+st.markdown("### 📝 ตรวจสอบและบันทึกรายการ")
+
 tourist_mode = st.toggle("✈️ โหมดนักท่องเที่ยว (แยกกระเป๋าทริป)")
 
-type_ = st.radio("🔄 ประเภทรายการ", ["รายจ่าย 🔴", "รายรับ 🟢"], horizontal=True)
+# ดึงค่าจากเสียงพูดมาตั้งเป็นค่าเริ่มต้น
+type_index = 0 if st.session_state.pre_type == "รายจ่าย 🔴" else 1
+type_ = st.radio("🔄 ประเภทรายการ", ["รายจ่าย 🔴", "รายรับ 🟢"], index=type_index, horizontal=True)
 
-with st.form("entry_form", clear_on_submit=True):
+with st.form("entry_form", clear_on_submit=False):
     date = st.date_input("📅 วันที่")
     
     if tourist_mode:
@@ -93,7 +175,12 @@ with st.form("entry_form", clear_on_submit=True):
             "📝 อื่นๆ"
         ]
         
-    category = st.selectbox("🏷️ หมวดหมู่", category_options)
+    try:
+        cat_idx = category_options.index(st.session_state.pre_cat)
+    except ValueError:
+        cat_idx = 0
+        
+    category = st.selectbox("🏷️ หมวดหมู่", category_options, index=cat_idx)
     
     if tourist_mode:
         st.markdown("🎌 **ข้อมูลสกุลเงินต่างประเทศ**")
@@ -109,7 +196,7 @@ with st.form("entry_form", clear_on_submit=True):
             min_value=0.0, 
             format="%.2f", 
             step=100.0, 
-            value=None, 
+            value=st.session_state.pre_amount, 
             placeholder=f"แตะระบุยอด {curr_symbol}..."
         )
     else:
@@ -118,14 +205,18 @@ with st.form("entry_form", clear_on_submit=True):
             min_value=0.0, 
             format="%.2f", 
             step=100.0, 
-            value=None, 
+            value=st.session_state.pre_amount, 
             placeholder="แตะเพื่อระบุยอดเงิน..."
         )
     
     channel_options = ["💳 Credit Card", "🦅 KTB", "🟢 K-BANK", "🟣 SCB", " 💵 เงินสด ", "📝อื่นๆ"]
-    channel = st.radio("🏦 ช่องทาง", channel_options, horizontal=True)
+    try:
+        chan_idx = channel_options.index(st.session_state.pre_chan)
+    except ValueError:
+        chan_idx = 4 
+    channel = st.radio("🏦 ช่องทาง", channel_options, index=chan_idx, horizontal=True)
     
-    note = st.text_input("📝 หมายเหตุ (ถ้ามี)")
+    note = st.text_input("📝 หมายเหตุ (ถ้ามี)", value=st.session_state.pre_note)
 
     if st.form_submit_button("บันทึกข้อมูลลงตาราง"):
         if amount_input is None or amount_input <= 0:
@@ -148,12 +239,20 @@ with st.form("entry_form", clear_on_submit=True):
             
             sheet.append_row([next_id, date.strftime("%Y-%m-%d"), category, income_amt, expense_amt, channel, final_note])
             st.success(f"✅ บันทึกยอด {final_thb_amount:,.2f} บาท สำเร็จแล้วค่ะ!")
+            
+            # เคลียร์ค่าตัวแปรจำเสียงหลังบันทึกสำเร็จ
+            st.session_state.pre_amount = None
+            st.session_state.pre_note = ""
+            st.session_state.pre_type = "รายจ่าย 🔴"
+            st.session_state.pre_cat = "🍜 ค่าอาหาร/เครื่องดื่ม"
+            st.session_state.pre_chan = " 💵 เงินสด "
+            
             st.rerun()
 
 st.markdown("---")
 
 # ==========================================
-# ส่วนที่ 2: Dashboard วิเคราะห์ข้อมูล
+# ส่วนที่ 3: Dashboard วิเคราะห์ข้อมูล
 # ==========================================
 st.markdown("### 📊 Dashboard วิเคราะห์ข้อมูล")
 
@@ -164,9 +263,7 @@ if not df.empty:
     df['เดือน-ปี'] = df['วันที่'].dt.strftime('%Y-%m')
     
     if tourist_mode:
-        # ✈️ โหมดทริป
         df['หมายเหตุ'] = df['หมายเหตุ'].fillna('')
-        
         st.markdown("#### ✈️ สรุปค่าใช้จ่ายแยกตามทริป")
         trip_search = st.text_input("พิมพ์ชื่อทริปที่ต้องการดู (เช่น Japan 2026):", value="Japan 2026")
         
@@ -174,7 +271,6 @@ if not df.empty:
         
         if not filtered_df.empty:
             total_trip_expense = filtered_df['รายจ่าย'].sum()
-            
             st.error(f"**รายจ่ายรวมทริป '{trip_search}':**\n## ฿ {total_trip_expense:,.2f}")
             
             st.markdown("##### 🍩 สัดส่วนค่าใช้จ่ายในทริปนี้")
@@ -184,7 +280,6 @@ if not df.empty:
             fig_pie.update_layout(showlegend=False, margin=dict(t=10, b=10, l=10, r=10))
             st.plotly_chart(fig_pie, use_container_width=True)
 
-            # 💡 แก้ไขบั๊กกราฟเส้นตรงนี้ค่ะ
             st.markdown("##### 📈 ยอดใช้จ่ายรายวัน")
             exp_only = filtered_df[filtered_df['รายจ่าย'] > 0].copy()
             if not exp_only.empty:
@@ -205,7 +300,6 @@ if not df.empty:
             st.info(f"ยังไม่มีข้อมูลบันทึกสำหรับทริป '{trip_search}' ค่ะ")
 
     else:
-        # 📅 โหมดรายเดือนปกติ
         months_list = ["ดูทั้งหมด"] + sorted(df['เดือน-ปี'].unique().tolist(), reverse=True)
         selected_month = st.selectbox("📅 เลือกเดือนที่ต้องการดูข้อมูล:", months_list)
         
@@ -226,7 +320,7 @@ if not df.empty:
         cc_expense = filtered_df[filtered_df['ช่องทาง'] == '💳 Credit Card']['รายจ่าย'].sum()
         st.markdown(f"""
         <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-left: 5px solid #64748b; padding: 15px; border-radius: 10px; margin-top: 10px; margin-bottom: 20px;">
-            <p style="margin:0; color: #475569; font-size: 16px;">💳 ยอดบัตรเครดิต (รูดเดือนนี้-อยู่ในรายจ่ายรวมแล้ว)</p>
+            <p style="margin:0; color: #475569; font-size: 16px;">💳 เตรียมจ่ายบิลบัตรเครดิต (รูดในเดือนนี้)</p>
             <h3 style="margin:0; color: #0f172a;">฿ {cc_expense:,.2f}</h3>
         </div>
         """, unsafe_allow_html=True)
@@ -252,7 +346,3 @@ if not df.empty:
             st.dataframe(filtered_df[cols_to_show].sort_values(by='วันที่', ascending=False), use_container_width=True)
 else:
     st.info("ยังไม่มีข้อมูลเลยค่ะ เจ้านายลองบันทึกรายการแรกดูนะคะ!")
-
-
-
-
