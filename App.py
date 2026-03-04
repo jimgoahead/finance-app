@@ -191,22 +191,34 @@ if process_btn and st.session_state.voice_input_key:
         st.session_state.pre_amount = float(amounts[0].replace(',', ''))
         
     # แกะหมวดหมู่ (Category)
-    if any(word in text_to_search for word in ["อาหาร", "กิน", "ข้าว", "กาแฟ"]):
+    if any(word in text_to_search for word in ["อาหาร", "กิน", "ดื่ม", "ข้าว", "กาแฟ"]):
         st.session_state.pre_cat = "🍜 ค่าอาหาร/เครื่องดื่ม"
-    elif any(word in text_to_search for word in ["เดินทาง", "รถ", "น้ำมัน", "bts"]):
+    elif any(word in text_to_search for word in ["เดินทาง", "รถ", "น้ำมัน", "ชาร์จ", "เรือ", "bts"]):
         st.session_state.pre_cat = "🚗 เดินทาง/เติมน้ำมัน"
-    elif any(word in text_to_search for word in ["ช้อปปิ้ง", "ของใช้", "ซื้อ", "เซเว่น"]):
+    elif any(word in text_to_search for word in ["ช้อป", "ของใช้", "ซื้อ", "เซเว่น"]):
         st.session_state.pre_cat = "🛍️ ช้อปปิ้ง/ของใช้"
     elif any(word in text_to_search for word in ["น้ำ", "ไฟ"]):
         st.session_state.pre_cat = "⚡ ค่าน้ำ/ค่าไฟ"
-    elif any(word in text_to_search for word in ["เน็ต", "net", "สตรีมมิ่ง"]):
+    elif any(word in text_to_search for word in ["เน็ต", "net", "ค่าโทร", "ais", "true", "สตรีมมิ่ง"]):
         st.session_state.pre_cat = "📱 ค่า Net/Streaming"
     elif "ซักผ้า" in text_to_search:
         st.session_state.pre_cat = "🧺 ค่าซักผ้า"
-    elif any(word in text_to_search for word in ["ลูก", "เรียน"]):
+    elif any(word in text_to_search for word in ["เงินเก็บลูก", "ค่าเรียน"]):
         st.session_state.pre_cat = "🏫 ค่าเรียนลูก"
     elif "เงินเดือน" in text_to_search:
         st.session_state.pre_cat = "💼 เงินเดือน"
+    elif "ค่าเที่ยว" in text_to_search:
+        st.session_state.pre_cat = "🎌 เงินเก็บค่าเที่ยวญี่ปุ่น"
+    elif any(word in text_to_search for word in ["เก็บส่วนกลาง", "ส่วนกลาง"]):
+        st.session_state.pre_cat = "🐷 เงินเก็บส่วนกลาง"
+    elif any(word in text_to_search for word in ["ส่วนกลางจากปุ๊", "ส่วนกลางปุ๊"]):
+        st.session_state.pre_cat = "👫 ค่าส่วนกลางจากปุ๊"  
+    elif any(word in text_to_search for word in ["โบนัส", "เงินพิเศษ"]):
+        st.session_state.pre_cat = "🎁 โบนัส/เงินพิเศษ"  
+    elif any(word in text_to_search for word in ["เงินคืน", "หารค่า"]):
+        st.session_state.pre_cat = "💸 คืนเงิน/Cashback"  
+    elif any(word in text_to_search for word in ["ดอกเบี้ย", "หุ้น", "กำไร", "ปันผล"]):
+        st.session_state.pre_cat = "📈 ดอกเบี้ย/ปันผล"     
     else:
         st.session_state.pre_cat = "📝 อื่นๆ"
 
@@ -438,3 +450,4 @@ if not df.empty:
             st.dataframe(filtered_df[cols_to_show].sort_values(by='วันที่', ascending=False), use_container_width=True)
 else:
     st.info("ยังไม่มีข้อมูลเลยค่ะ เจ้านายลองบันทึกรายการแรกดูนะคะ!")
+
