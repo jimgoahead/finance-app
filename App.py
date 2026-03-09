@@ -86,13 +86,11 @@ df = load_data()
 # ==========================================
 # ส่วนที่ 1: ระบบสั่งงานด้วยเสียง (Voice Magic Input)
 # ==========================================
-# 💡 เตรียมตัวแปรสำหรับรับค่าและตัวแปรสำหรับเคลียร์ฟอร์ม
 if 'pre_type' not in st.session_state: st.session_state.pre_type = "รายจ่าย 🔴"
 if 'pre_cat' not in st.session_state: st.session_state.pre_cat = "🍜 ค่าอาหาร/เครื่องดื่ม"
 if 'pre_chan' not in st.session_state: st.session_state.pre_chan = " 💵 เงินสด "
 if 'pre_amount' not in st.session_state: st.session_state.pre_amount = None
 if 'pre_note' not in st.session_state: st.session_state.pre_note = ""
-# 💡 กุญแจเวทมนตร์สำหรับรีเซ็ตฟอร์ม
 if 'form_reset' not in st.session_state: st.session_state.form_reset = 0
 
 def clear_voice_text():
@@ -103,7 +101,7 @@ def clear_voice_text():
     st.session_state.pre_type = "รายจ่าย 🔴"
     st.session_state.pre_cat = "🍜 ค่าอาหาร/เครื่องดื่ม"
     st.session_state.pre_chan = " 💵 เงินสด "
-    st.session_state.form_reset += 1 # 💡 เปลี่ยนกุญแจเพื่อให้ฟอร์มช่องอื่นๆ ว่างเปล่าด้วย
+    st.session_state.form_reset += 1 
 
 st.markdown("### 🎙️ สั่งงานด้วยเสียง (Magic Input)")
 st.info("💡 **วิธีใช้:** แตะช่องสีฟ้า กดไมค์ที่คีย์บอร์ดมือถือเพื่อพูด แล้วกดปุ่ม ✨ แยกคำ")
@@ -118,8 +116,6 @@ with col2:
 
 if process_btn and st.session_state.voice_input_key:
     text = st.session_state.voice_input_key.lower()
-    if "รายรับ" in text: st.session_state.pre_type = "รายรับ 🟢"
-    else: st.session_state.pre_type = "รายจ่าย 🔴"
         
     if "หมายเหตุ" in text:
         parts = text.split("หมายเหตุ", 1)
@@ -135,21 +131,52 @@ if process_btn and st.session_state.voice_input_key:
     else:
         st.session_state.pre_amount = None
         
-    if "เงินเดือน" in text_to_search: st.session_state.pre_cat = "💼 เงินเดือน"
-    elif any(word in text_to_search for word in ["ส่วนกลางจากปุ๊", "ส่วนกลางปุ๊"]): st.session_state.pre_cat = "👫 ค่าส่วนกลางจากปุ๊"  
-    elif any(word in text_to_search for word in ["เงินคืน", "หารค่า"]): st.session_state.pre_cat = "💸 คืนเงิน/Cashback"  
-    elif any(word in text_to_search for word in ["โบนัส", "เงินพิเศษ"]): st.session_state.pre_cat = "🎁 โบนัส/เงินพิเศษ"  
-    elif any(word in text_to_search for word in ["ดอกเบี้ย", "หุ้น", "กำไร", "ปันผล"]): st.session_state.pre_cat = "📈 ดอกเบี้ย/ปันผล"      
-    elif any(word in text_to_search for word in ["เดินทาง", "รถ", "น้ำมัน", "ชาร์จ", "เรือ", "bts"]): st.session_state.pre_cat = "🚗 เดินทาง/เติมน้ำมัน"
-    elif any(word in text_to_search for word in ["อาหาร", "กิน", "ดื่ม", "ข้าว", "กาแฟ"]): st.session_state.pre_cat = "🍜 ค่าอาหาร/เครื่องดื่ม"
-    elif any(word in text_to_search for word in ["ช้อป", "ของใช้", "ซื้อ", "เซเว่น"]): st.session_state.pre_cat = "🛍️ ช้อปปิ้ง/ของใช้"
-    elif any(word in text_to_search for word in ["น้ำ", "ไฟ"]): st.session_state.pre_cat = "⚡ ค่าน้ำ/ค่าไฟ"
-    elif any(word in text_to_search for word in ["เน็ต", "net", "ค่าโทร", "ais", "true", "สตรีมมิ่ง"]): st.session_state.pre_cat = "📱 ค่า Net/Streaming"
-    elif "ซักผ้า" in text_to_search: st.session_state.pre_cat = "🧺 ค่าซักผ้า"
-    elif any(word in text_to_search for word in ["เงินเก็บลูก", "ค่าเรียน"]): st.session_state.pre_cat = "🏫 ค่าเรียนลูก"
-    elif "ค่าเที่ยว" in text_to_search: st.session_state.pre_cat = "🎌 เงินเก็บค่าเที่ยวญี่ปุ่น"
-    elif any(word in text_to_search for word in ["เก็บส่วนกลาง", "ส่วนกลาง"]): st.session_state.pre_cat = "🐷 เงินเก็บ/ส่วนกลาง"
-    else: st.session_state.pre_cat = "📝 อื่นๆ"
+    # 💡 ลอจิกใหม่: คัดแยกรายรับ/รายจ่าย จากหมวดหมู่โดยตรง
+    is_income = False
+    
+    # --- กลุ่มรายรับ ---
+    if any(word in text_to_search for word in ["ส่วนกลางจากปุ๊", "ส่วนกลางปุ๊"]): 
+        st.session_state.pre_cat = "👫 ค่าส่วนกลางจากปุ๊"
+        is_income = True
+    elif any(word in text_to_search for word in ["เงินคืน", "หารค่า"]): 
+        st.session_state.pre_cat = "💸 คืนเงิน/Cashback"
+        is_income = True
+    elif any(word in text_to_search for word in ["โบนัส", "เงินพิเศษ"]): 
+        st.session_state.pre_cat = "🎁 โบนัส/เงินพิเศษ"
+        is_income = True
+    elif any(word in text_to_search for word in ["ดอกเบี้ย", "หุ้น", "กำไร", "ปันผล"]): 
+        st.session_state.pre_cat = "📈 ดอกเบี้ย/ปันผล"
+        is_income = True
+    elif "เงินเดือน" in text_to_search: 
+        st.session_state.pre_cat = "💼 เงินเดือน"
+        is_income = True
+        
+    # --- กลุ่มรายจ่าย ---
+    elif any(word in text_to_search for word in ["เดินทาง", "รถ", "น้ำมัน", "ชาร์จ", "เรือ", "bts"]): 
+        st.session_state.pre_cat = "🚗 เดินทาง/เติมน้ำมัน"
+    elif any(word in text_to_search for word in ["อาหาร", "กิน", "ดื่ม", "ข้าว", "กาแฟ"]): 
+        st.session_state.pre_cat = "🍜 ค่าอาหาร/เครื่องดื่ม"
+    elif any(word in text_to_search for word in ["ช้อป", "ของใช้", "ซื้อ", "เซเว่น"]): 
+        st.session_state.pre_cat = "🛍️ ช้อปปิ้ง/ของใช้"
+    elif any(word in text_to_search for word in ["น้ำ", "ไฟ"]): 
+        st.session_state.pre_cat = "⚡ ค่าน้ำ/ค่าไฟ"
+    elif any(word in text_to_search for word in ["เน็ต", "net", "ค่าโทร", "ais", "true", "สตรีมมิ่ง"]): 
+        st.session_state.pre_cat = "📱 ค่า Net/Streaming"
+    elif "ซักผ้า" in text_to_search: 
+        st.session_state.pre_cat = "🧺 ค่าซักผ้า"
+    elif any(word in text_to_search for word in ["เงินเก็บลูก", "ค่าเรียน"]): 
+        st.session_state.pre_cat = "🏫 ค่าเรียนลูก"
+    elif "ค่าเที่ยว" in text_to_search: 
+        st.session_state.pre_cat = "🎌 เงินเก็บค่าเที่ยวญี่ปุ่น"
+    elif any(word in text_to_search for word in ["เก็บส่วนกลาง", "ส่วนกลาง"]): 
+        st.session_state.pre_cat = "🐷 เงินเก็บ/ส่วนกลาง"
+    else: 
+        st.session_state.pre_cat = "📝 อื่นๆ"
+        # ถ้าหาไม่เจอจริงๆ แต่มีคำว่ารายรับ ก็ให้สวิตช์เป็นรายรับ
+        if "รายรับ" in text: is_income = True
+
+    # 💡 สั่งให้ Type เปลี่ยนตามตัวแปร is_income เลย
+    st.session_state.pre_type = "รายรับ 🟢" if is_income else "รายจ่าย 🔴"
 
     if any(word in text_to_search for word in ["kbank", "กสิกร", "เคแบงก์"]): st.session_state.pre_chan = "🟢 K-BANK"
     elif any(word in text_to_search for word in ["scb", "ไทยพาณิชย์"]): st.session_state.pre_chan = "🟣 SCB"
@@ -157,7 +184,7 @@ if process_btn and st.session_state.voice_input_key:
     elif any(word in text_to_search for word in ["บัตร", "เครดิต", "credit"]): st.session_state.pre_chan = "💳 Credit Card"
     else: st.session_state.pre_chan = " 💵 เงินสด "
         
-    st.session_state.form_reset += 1 # 💡 รีเซ็ตกล่องข้อความให้พร้อมรับค่าจากเสียง
+    st.session_state.form_reset += 1 
     st.rerun()
 
 st.markdown("---")
@@ -202,7 +229,6 @@ if "รายจ่าย" in type_ and channel == "💳 Credit Card":
         if payment_type == "ผ่อนชำระ":
             installments = st.selectbox("จำนวนงวด (เดือน)", [4, 6, 10], label_visibility="collapsed")
 
-# 💡 ใช้ Dynamic Key (เอา form_reset มาต่อท้าย) ถ้าบันทึกปุ๊บ กุญแจเปลี่ยน กล่องจะถูกล้างค่าให้ว่างทันที
 if tourist_mode:
     st.markdown("🎌 **ข้อมูลสกุลเงินต่างประเทศ**")
     col_curr, col_rate = st.columns(2)
@@ -281,13 +307,12 @@ if st.button("บันทึกข้อมูลลงตาราง", type="
 
         sheet.append_rows(rows_to_append)
         
-        # 💡 ล้างค่าให้เกลี้ยง
         st.session_state.pre_amount = None
         st.session_state.pre_note = ""
         st.session_state.pre_type = "รายจ่าย 🔴"
         st.session_state.pre_cat = "🍜 ค่าอาหาร/เครื่องดื่ม"
         st.session_state.pre_chan = " 💵 เงินสด "
-        st.session_state.form_reset += 1 # 💡 สั่งสับเปลี่ยนกุญแจ กล่องกรอกข้อมูลจะกลายเป็นช่องว่างทันที!
+        st.session_state.form_reset += 1 
         if "voice_input_key" in st.session_state: del st.session_state["voice_input_key"]
         
         st.rerun()
@@ -386,4 +411,3 @@ if not df.empty:
                         st.dataframe(actual_cc_bill_df[['วันที่', 'รายการ', 'รายจ่าย', 'ประเภทการจ่าย', 'งวดปัจจุบัน', 'หมายเหตุ']].sort_values(by='วันที่'), use_container_width=True)
             else: st.warning("⚠️ กรุณาเลือกเดือนที่ต้องการดู Cashflow ค่ะ")
 else: st.info("ยังไม่มีข้อมูลเลยค่ะ เจ้านายลองบันทึกรายการแรกดูนะคะ!")
-
