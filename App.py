@@ -74,18 +74,6 @@ st.markdown("""
         border-color: #f44336 !important;
         font-weight: bold !important;
     }
-    
-    /* 💡 ปุ่มบันทึกข้อมูลสีฟ้า (DeepSkyBlue) ตามที่เจ้านายสั่ง */
-    div[data-testid="stButton"]:has(button[key="btn_save"]) button {
-        background-color: #00BFFF !important; 
-        color: white !important;
-        border-radius: 8px !important;
-        height: 50px !important;
-        font-weight: bold !important;
-        font-size: 18px !important;
-        border: none !important;
-        width: 100% !important;
-    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -204,16 +192,33 @@ if tourist_mode:
     col_curr, col_rate = st.columns(2)
     with col_curr: curr = st.selectbox("สกุลเงิน", ["JPY (เยน)", "USD (ดอลลาร์)"])
     with col_rate: rate = st.number_input("เรทแลกเปลี่ยน", value=None, format="%.4f", step=0.0100)
-    # 💡 ใส่ Placeholder 0.00
     amount_input = st.number_input(f"💰 จำนวนเงิน ({curr.split(' ')[0]})", min_value=0.0, format="%.2f", step=100.0, value=st.session_state.pre_amount, placeholder="0.00")
 else:
-    # 💡 ใส่ Placeholder 0.00
     amount_input = st.number_input("💰 จำนวนเงินทั้งหมด (บาท)", min_value=0.0, format="%.2f", step=100.0, value=st.session_state.pre_amount, placeholder="0.00")
 
-# 💡 ใส่ Placeholder หมายเหตุ:
 note = st.text_input("📝 หมายเหตุ (ถ้ามี)", value=st.session_state.pre_note, placeholder="หมายเหตุ:")
 
-if st.button("บันทึกข้อมูลลงตาราง", key="btn_save", use_container_width=True):
+# 💡 ฝัง CSS ไว้ตรงนี้เลย พร้อมกำหนดสีฟ้า #00BFFF สำหรับปุ่ม Primary โดยเฉพาะ
+st.markdown("""
+    <style>
+    button[kind="primary"] {
+        background-color: #00BFFF !important; 
+        color: white !important;
+        border-radius: 8px !important;
+        height: 50px !important;
+        font-weight: bold !important;
+        font-size: 18px !important;
+        border: none !important;
+    }
+    button[kind="primary"]:hover {
+        background-color: #009acd !important; /* เปลี่ยนสีเข้มขึ้นนิดนึงตอนเอาเมาส์ชี้ */
+        border-color: #009acd !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# 💡 สังเกตตรง type="primary" นะคะ นี่คือเป้าหมายที่เราให้ CSS ดักจับค่ะ!
+if st.button("บันทึกข้อมูลลงตาราง", type="primary", use_container_width=True):
     if amount_input is None or amount_input <= 0:
         st.error("⚠️ เจ้านายอย่าลืมใส่จำนวนเงินนะคะ!")
     else:
