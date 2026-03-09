@@ -52,16 +52,23 @@ st.markdown("""
         border-radius: 8px !important;
         padding: 5px !important;
     }
+    
+    /* 💡 ข้อความที่พิมพ์จริง: สีดำเข้ม ตัวหนา */
     div[data-testid="stTextInput"]:has(input[placeholder*="แตะที่นี่แล้วพูด"]) input {
         color: #000000 !important; 
         -webkit-text-fill-color: #000000 !important; 
         font-weight: bold !important;
         font-size: 16px !important;
     }
+    
+    /* 💡 ข้อความคำใบ้ (Placeholder): สีเทาอ่อน ตัวบาง */
     div[data-testid="stTextInput"]:has(input[placeholder*="แตะที่นี่แล้วพูด"]) input::placeholder {
-        color: #555555 !important;
-        -webkit-text-fill-color: #555555 !important;
+        color: #9e9e9e !important;
+        -webkit-text-fill-color: #9e9e9e !important;
+        font-weight: normal !important; 
+        opacity: 1 !important;
     }
+    
     div[data-testid="stColumn"]:nth-child(1) div[data-testid="stButton"] button {
         background-color: #4CAF50 !important;
         color: white !important;
@@ -198,7 +205,6 @@ else:
 
 note = st.text_input("📝 หมายเหตุ (ถ้ามี)", value=st.session_state.pre_note, placeholder="หมายเหตุ:")
 
-# 💡 ฝัง CSS ไว้ตรงนี้เลย พร้อมกำหนดสีฟ้า #00BFFF สำหรับปุ่ม Primary โดยเฉพาะ
 st.markdown("""
     <style>
     button[kind="primary"] {
@@ -211,13 +217,12 @@ st.markdown("""
         border: none !important;
     }
     button[kind="primary"]:hover {
-        background-color: #009acd !important; /* เปลี่ยนสีเข้มขึ้นนิดนึงตอนเอาเมาส์ชี้ */
+        background-color: #009acd !important; 
         border-color: #009acd !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# 💡 สังเกตตรง type="primary" นะคะ นี่คือเป้าหมายที่เราให้ CSS ดักจับค่ะ!
 if st.button("บันทึกข้อมูลลงตาราง", type="primary", use_container_width=True):
     if amount_input is None or amount_input <= 0:
         st.error("⚠️ เจ้านายอย่าลืมใส่จำนวนเงินนะคะ!")
