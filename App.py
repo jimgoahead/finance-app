@@ -52,23 +52,18 @@ st.markdown("""
         border-radius: 8px !important;
         padding: 5px !important;
     }
-    
-    /* 💡 ข้อความที่พิมพ์จริง: สีดำเข้ม ตัวหนา */
     div[data-testid="stTextInput"]:has(input[placeholder*="แตะที่นี่แล้วพูด"]) input {
         color: #000000 !important; 
         -webkit-text-fill-color: #000000 !important; 
         font-weight: bold !important;
         font-size: 16px !important;
     }
-    
-    /* 💡 ข้อความคำใบ้ (Placeholder): สีเทาอ่อน ตัวบาง */
     div[data-testid="stTextInput"]:has(input[placeholder*="แตะที่นี่แล้วพูด"]) input::placeholder {
         color: #9e9e9e !important;
         -webkit-text-fill-color: #9e9e9e !important;
         font-weight: normal !important; 
         opacity: 1 !important;
     }
-    
     div[data-testid="stColumn"]:nth-child(1) div[data-testid="stButton"] button {
         background-color: #4CAF50 !important;
         color: white !important;
@@ -199,11 +194,14 @@ if tourist_mode:
     col_curr, col_rate = st.columns(2)
     with col_curr: curr = st.selectbox("สกุลเงิน", ["JPY (เยน)", "USD (ดอลลาร์)"])
     with col_rate: rate = st.number_input("เรทแลกเปลี่ยน", value=None, format="%.4f", step=0.0100)
-    amount_input = st.number_input(f"💰 จำนวนเงิน ({curr.split(' ')[0]})", min_value=0.0, format="%.2f", step=100.0, value=st.session_state.pre_amount, placeholder="0.00")
+    # 💡 ใส่ key="amount_input" เพื่อสั่งล้างค่าได้
+    amount_input = st.number_input(f"💰 จำนวนเงิน ({curr.split(' ')[0]})", min_value=0.0, format="%.2f", step=100.0, value=st.session_state.pre_amount, placeholder="0.00", key="amount_input")
 else:
-    amount_input = st.number_input("💰 จำนวนเงินทั้งหมด (บาท)", min_value=0.0, format="%.2f", step=100.0, value=st.session_state.pre_amount, placeholder="0.00")
+    # 💡 ใส่ key="amount_input"
+    amount_input = st.number_input("💰 จำนวนเงินทั้งหมด (บาท)", min_value=0.0, format="%.2f", step=100.0, value=st.session_state.pre_amount, placeholder="0.00", key="amount_input")
 
-note = st.text_input("📝 หมายเหตุ (ถ้ามี)", value=st.session_state.pre_note, placeholder="หมายเหตุ:")
+# 💡 ใส่ key="note_input" เพื่อสั่งล้างค่าได้
+note = st.text_input("📝 หมายเหตุ (ถ้ามี)", value=st.session_state.pre_note, placeholder="หมายเหตุ:", key="note_input")
 
 st.markdown("""
     <style>
@@ -271,11 +269,18 @@ if st.button("บันทึกข้อมูลลงตาราง", type="
             st.success(f"✅ บันทึกยอด {final_thb_amount:,.2f} บาท สำเร็จแล้วค่ะ!")
 
         sheet.append_rows(rows_to_append)
+        
+        # 💡 ล้างค่าหน่วยความจำ (Session State) ให้สะอาดหมดจด
         st.session_state.pre_amount = None
         st.session_state.pre_note = ""
         st.session_state.pre_type = "รายจ่าย 🔴"
         st.session_state.pre_cat = "🍜 ค่าอาหาร/เครื่องดื่ม"
         st.session_state.pre_chan = " 💵 เงินสด "
+        
+        # 💡 บังคับล้างค่าช่องกรอกข้อมูลที่เจ้านายพิมพ์ค้างไว้
+        st.session_state.note_input = ""
+        st.session_state.amount_input = None
+        
         if "voice_input_key" in st.session_state: del st.session_state["voice_input_key"]
         st.rerun()
 
