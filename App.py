@@ -28,7 +28,6 @@ sheet = client.open(SHEET_NAME).sheet1
 
 def load_data():
     data = sheet.get_all_records()
-    # 💡 เพิ่มคอลัมน์ "เดือนที่จ่ายบิล" เป็นคอลัมน์ที่ 12
     cols = ['ลำดับ', 'วันที่', 'รายการ', 'รายรับ', 'รายจ่าย', 'ช่องทาง', 'หมายเหตุ', 'ประเภทการจ่าย', 'จำนวนงวด', 'งวดปัจจุบัน', 'ID รายการผ่อน', 'เดือนที่จ่ายบิล']
     if data:
         df = pd.DataFrame(data)
@@ -75,8 +74,10 @@ st.markdown("""
         border-color: #f44336 !important;
         font-weight: bold !important;
     }
+    
+    /* 💡 ปุ่มบันทึกข้อมูลสีฟ้า (DeepSkyBlue) ตามที่เจ้านายสั่ง */
     div[data-testid="stButton"]:has(button[key="btn_save"]) button {
-        background-color: #1976D2 !important; 
+        background-color: #00BFFF !important; 
         color: white !important;
         border-radius: 8px !important;
         height: 50px !important;
@@ -106,7 +107,7 @@ def clear_voice_text():
         st.session_state.voice_input_key = ""
 
 st.markdown("### 🎙️ สั่งงานด้วยเสียง (Magic Input)")
-st.info("💡 **วิธีใช้:** แตะช่องสีฟ้าด้านล่าง กดไมค์ที่คีย์บอร์ดมือถือเพื่อพูด แล้วกดปุ่ม ✨ แยกคำ")
+st.info("💡 **วิธีใช้:** แตะช่องสีฟ้า กดไมค์ที่คีย์บอร์ดมือถือเพื่อพูด แล้วกดปุ่ม ✨ แยกคำ")
 
 voice_input = st.text_input("ข้อความเสียง:", key="voice_input_key", placeholder="แตะที่นี่แล้วพูด... เช่น: รายจ่ายค่าอาหาร 150 บาท จ่ายด้วย Kbank")
 
@@ -118,7 +119,6 @@ with col2:
 
 if process_btn and st.session_state.voice_input_key:
     text = st.session_state.voice_input_key.lower()
-    
     if "รายรับ" in text: st.session_state.pre_type = "รายรับ 🟢"
     else: st.session_state.pre_type = "รายจ่าย 🔴"
         
@@ -204,12 +204,14 @@ if tourist_mode:
     col_curr, col_rate = st.columns(2)
     with col_curr: curr = st.selectbox("สกุลเงิน", ["JPY (เยน)", "USD (ดอลลาร์)"])
     with col_rate: rate = st.number_input("เรทแลกเปลี่ยน", value=None, format="%.4f", step=0.0100)
-    curr_symbol = curr.split(' ')[0]
-    amount_input = st.number_input(f"💰 จำนวนเงิน ({curr_symbol})", min_value=0.0, format="%.2f", step=100.0, value=st.session_state.pre_amount)
+    # 💡 ใส่ Placeholder 0.00
+    amount_input = st.number_input(f"💰 จำนวนเงิน ({curr.split(' ')[0]})", min_value=0.0, format="%.2f", step=100.0, value=st.session_state.pre_amount, placeholder="0.00")
 else:
-    amount_input = st.number_input("💰 จำนวนเงินทั้งหมด (บาท)", min_value=0.0, format="%.2f", step=100.0, value=st.session_state.pre_amount)
+    # 💡 ใส่ Placeholder 0.00
+    amount_input = st.number_input("💰 จำนวนเงินทั้งหมด (บาท)", min_value=0.0, format="%.2f", step=100.0, value=st.session_state.pre_amount, placeholder="0.00")
 
-note = st.text_input("📝 หมายเหตุ (ถ้ามี)", value=st.session_state.pre_note)
+# 💡 ใส่ Placeholder หมายเหตุ:
+note = st.text_input("📝 หมายเหตุ (ถ้ามี)", value=st.session_state.pre_note, placeholder="หมายเหตุ:")
 
 if st.button("บันทึกข้อมูลลงตาราง", key="btn_save", use_container_width=True):
     if amount_input is None or amount_input <= 0:
@@ -230,31 +232,26 @@ if st.button("บันทึกข้อมูลลงตาราง", key="b
         next_id = len(all_values)
         rows_to_append = []
 
-        # 💡 ลอจิกการสร้างเดือนจ่ายบิล (Billing Month)
         if payment_type == "ผ่อนชำระ" and channel == "💳 Credit Card" and "รายจ่าย" in type_:
             monthly_amt = final_thb_amount / installments
             inst_id = f"INST-{date.strftime('%Y%m%d')}-{next_id}" 
-            
             for i in range(1, installments + 1):
-                f_date = date.strftime("%Y-%m-%d") # วันที่ซื้อ (เพื่อให้ไปโชว์ในแท็บ 1 เดือนนี้)
-                b_month = (pd.to_datetime(date) + pd.DateOffset(months=i)).strftime("%Y-%m") # เดือนจ่ายบิล (เริ่มบวก 1 เดือนไปเรื่อยๆ)
-                
+                f_date = date.strftime("%Y-%m-%d")
+                b_month = (pd.to_datetime(date) + pd.DateOffset(months=i)).strftime("%Y-%m")
                 rows_to_append.append([
                     next_id + (i-1), f_date, category, "", monthly_amt, channel, final_note, 
                     "ผ่อนชำระ", installments, i, inst_id, b_month
                 ])
             st.success(f"✅ บันทึกยอดผ่อนเดือนละ {monthly_amt:,.2f} บาท จำนวน {installments} งวด สำเร็จแล้วค่ะ!")
-            
         elif channel == "💳 Credit Card" and "รายจ่าย" in type_:
-            b_month = (pd.to_datetime(date) + pd.DateOffset(months=1)).strftime("%Y-%m") # จ่ายเต็ม ยกไปบิลเดือนหน้า
+            b_month = (pd.to_datetime(date) + pd.DateOffset(months=1)).strftime("%Y-%m")
             rows_to_append.append([
                 next_id, date.strftime("%Y-%m-%d"), category, "", final_thb_amount, channel, final_note, 
                 "จ่ายเต็ม", 1, 1, "", b_month
             ])
             st.success(f"✅ บันทึกยอด {final_thb_amount:,.2f} บาท (รูดบัตรเต็มจำนวน) สำเร็จแล้วค่ะ!")
-            
         else:
-            b_month = pd.to_datetime(date).strftime("%Y-%m") # เงินสด/โอน จ่ายบิลเดือนนี้เลย
+            b_month = pd.to_datetime(date).strftime("%Y-%m")
             income_amt = final_thb_amount if "รายรับ" in type_ else ""
             expense_amt = final_thb_amount if "รายจ่าย" in type_ else ""
             rows_to_append.append([
@@ -264,14 +261,12 @@ if st.button("บันทึกข้อมูลลงตาราง", key="b
             st.success(f"✅ บันทึกยอด {final_thb_amount:,.2f} บาท สำเร็จแล้วค่ะ!")
 
         sheet.append_rows(rows_to_append)
-        
         st.session_state.pre_amount = None
         st.session_state.pre_note = ""
         st.session_state.pre_type = "รายจ่าย 🔴"
         st.session_state.pre_cat = "🍜 ค่าอาหาร/เครื่องดื่ม"
         st.session_state.pre_chan = " 💵 เงินสด "
         if "voice_input_key" in st.session_state: del st.session_state["voice_input_key"]
-        
         st.rerun()
 
 st.markdown("---")
@@ -285,9 +280,7 @@ if not df.empty:
     df['รายรับ'] = pd.to_numeric(df['รายรับ'].replace('', 0, regex=True))
     df['รายจ่าย'] = pd.to_numeric(df['รายจ่าย'].replace('', 0, regex=True))
     df['วันที่'] = pd.to_datetime(df['วันที่'])
-    df['เดือน-ปี'] = df['วันที่'].dt.strftime('%Y-%m') # เดือนที่ซื้อจริง (สำหรับแท็บ 1)
-    
-    # อุดช่องโหว่ข้อมูลเก่าที่ไม่มีคอลัมน์ L ให้ใช้ค่าเดียวกับเดือนที่ซื้อ
+    df['เดือน-ปี'] = df['วันที่'].dt.strftime('%Y-%m')
     df['เดือนที่จ่ายบิล'] = df['เดือนที่จ่ายบิล'].replace('', pd.NA).fillna(df['เดือน-ปี'])
     
     if tourist_mode:
@@ -295,7 +288,6 @@ if not df.empty:
         st.markdown("#### ✈️ สรุปค่าใช้จ่ายแยกตามทริป")
         trip_search = st.text_input("พิมพ์ชื่อทริปที่ต้องการดู:", value="Japan 2026")
         f_df = df[df['หมายเหตุ'].str.contains(f"#{trip_search}", na=False)]
-        
         if not f_df.empty:
             st.error(f"**รายจ่ายรวมทริป:**\n## ฿ {f_df['รายจ่าย'].sum():,.2f}")
             fig_pie = px.pie(f_df[f_df['รายจ่าย'] > 0].groupby('รายการ', as_index=False)['รายจ่าย'].sum(), values='รายจ่าย', names='รายการ', hole=0.4)
@@ -306,21 +298,13 @@ if not df.empty:
             st.info("ยังไม่มีข้อมูลบันทึกสำหรับทริปนี้ค่ะ")
     else:
         tab1, tab2 = st.tabs(["📊 Dashboard หลัก", "💵 Cashflow (เงินสดจริง)"])
-        
-        # 💡 ลอจิกหาเดือนปัจจุบันเพื่อตั้งเป็นค่า Default
         months_list = ["ดูทั้งหมด"] + sorted(df['เดือน-ปี'].unique().tolist(), reverse=True)
         current_m_str = pd.Timestamp.today().strftime('%Y-%m')
-        
-        try:
-            default_index = months_list.index(current_m_str)
-        except ValueError:
-            default_index = 0 if len(months_list) == 1 else 1 
+        try: default_index = months_list.index(current_m_str)
+        except ValueError: default_index = 0 if len(months_list) == 1 else 1 
             
         sel_m = st.selectbox("📅 เลือกเดือนที่ต้องการดูข้อมูล:", months_list, index=default_index)
-        
-        # ข้อมูลสำหรับแท็บ 1 (คัดกรองจาก "วันที่ซื้อ")
         f_df = df if sel_m == "ดูทั้งหมด" else df[df['เดือน-ปี'] == sel_m]
-        
         total_income = f_df['รายรับ'].sum()
         total_expense = f_df['รายจ่าย'].sum()
         balance = total_income - total_expense
@@ -329,10 +313,7 @@ if not df.empty:
             col1, col2 = st.columns(2)
             col1.success(f"**รายรับรวม:**\n### ฿ {total_income:,.2f}")
             col2.error(f"**รายจ่ายรวม:**\n### ฿ {total_expense:,.2f}")
-            
             st.info(f"**ยอดคงเหลือ (ทางบัญชี):**\n## ฿ {balance:,.2f}")
-
-            # ยอดบัตรเครดิตที่เพิ่งรูดซื้อของไปในเดือนนี้ (รวมทั้งจ่ายเต็มและยอดเต็มของการผ่อน)
             cc_expense_this_m = f_df[f_df['ช่องทาง'] == '💳 Credit Card']['รายจ่าย'].sum()
             st.markdown(f"""
             <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-left: 5px solid #64748b; padding: 15px; border-radius: 10px; margin-top: 10px; margin-bottom: 20px;">
@@ -340,48 +321,33 @@ if not df.empty:
                 <h3 style="margin:0; color: #0f172a;">฿ {cc_expense_this_m:,.2f}</h3>
             </div>
             """, unsafe_allow_html=True)
-
             st.markdown("#### 🏆 วิเคราะห์หมวดหมู่การใช้จ่าย")
             expense_df = f_df[f_df['รายจ่าย'] > 0]
-            
             if not expense_df.empty:
                 cat_expense = expense_df.groupby('รายการ', as_index=False)['รายจ่าย'].sum().sort_values(by='รายจ่าย', ascending=False)
                 top_cat = cat_expense.iloc[0]['รายการ']
                 top_amt = cat_expense.iloc[0]['รายจ่าย']
                 st.warning(f"🥇 **จ่ายหนักสุดในหมวด:** {top_cat} (฿ {top_amt:,.2f})")
-                
                 fig = px.pie(cat_expense, values='รายจ่าย', names='รายการ', hole=0.4, color_discrete_sequence=px.colors.qualitative.Pastel)
                 fig.update_traces(textposition='inside', textinfo='percent+label', insidetextorientation='horizontal')
                 fig.update_layout(showlegend=False, margin=dict(t=10, b=10, l=10, r=10))
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 st.write("ยังไม่มีรายจ่ายในเดือนนี้ค่ะ")
-
             with st.expander("เปิดดูประวัติรายการทั้งหมด"):
                 cols_to_show = ['วันที่', 'รายการ', 'รายรับ', 'รายจ่าย', 'ช่องทาง', 'หมายเหตุ']
                 st.dataframe(f_df[cols_to_show].sort_values(by='วันที่', ascending=False), use_container_width=True)
 
         with tab2:
             if sel_m != "ดูทั้งหมด":
-                # 💡 สเต็ป 1: หาเงินสดที่แท้จริงในมือ (ยอดบัญชีแท็บแรก + คืนยอดที่รูดบัตรเดือนนี้เข้าไปเพราะเงินยังไม่ออก)
                 true_cash = balance + cc_expense_this_m
-                
-                # 💡 สเต็ป 2: หาบิลบัตรที่ต้องชำระจริง (คัดกรองจาก "เดือนที่จ่ายบิล" หรือคอลัมน์ L)
-                # ดึงข้อมูลทั้งหมดในฐานข้อมูลที่มีกำหนดจ่ายบิลในเดือนที่เลือก
                 actual_cc_bill_df = df[(df['เดือนที่จ่ายบิล'] == sel_m) & (df['ช่องทาง'] == '💳 Credit Card')]
-                
-                # แยกย่อยให้เจ้านายดูว่ามาจากรูดเต็มเท่าไหร่ ผ่อนเท่าไหร่
                 cc_full_bill = actual_cc_bill_df[actual_cc_bill_df['ประเภทการจ่าย'] == 'จ่ายเต็ม']['รายจ่าย'].sum()
                 cc_inst_bill = actual_cc_bill_df[actual_cc_bill_df['ประเภทการจ่าย'] == 'ผ่อนชำระ']['รายจ่าย'].sum()
                 actual_cc_bill = cc_full_bill + cc_inst_bill
-                
-                # 💡 สเต็ป 3: หา Net Cashflow
                 real_cashflow = true_cash - actual_cc_bill
-
                 st.markdown(f"#### 💵 กระแสเงินสดสุทธิ (Cashflow) ประจำเดือน {sel_m}")
-                
                 st.info(f"**💰 เงินสดที่แท้จริงในมือ (ก่อนจ่ายบัตร):**\n## ฿ {true_cash:,.2f}\n*(ยอดคงเหลือทางบัญชี ฿{balance:,.2f} + เงินสดที่ยังไม่ออกเพราะรูดบัตร ฿{cc_expense_this_m:,.2f})*")
-                
                 st.markdown(f"""
                 <div style="background-color: #fff1f2; border: 1px solid #fda4af; border-left: 5px solid #e11d48; padding: 15px; border-radius: 10px; margin-bottom: 15px; margin-top: 15px;">
                     <p style="margin:0; color: #881337; font-size: 16px;">💳 ลบยอดบัตรเครดิตที่ต้องชำระรอบบิลนี้</p>
@@ -389,15 +355,9 @@ if not df.empty:
                     <p style="margin:0; color: #881337; font-size: 14px;">(ยอดรูดเต็มรอบก่อน ฿ {cc_full_bill:,.2f} + ยอดผ่อนรอบนี้ ฿ {cc_inst_bill:,.2f})</p>
                 </div>
                 """, unsafe_allow_html=True)
-                
                 st.success(f"**✨ Cashflow เงินสดคงเหลือจริงๆ:**\n## ฿ {real_cashflow:,.2f}")
-                
-                # แถมตารางแจกแจงหนี้บัตรของเดือนนี้ให้เจ้านายดูชัดๆ
                 if not actual_cc_bill_df.empty:
                     with st.expander("🧾 ดูรายละเอียดบิลบัตรเครดิตที่เรียกเก็บเดือนนี้"):
                         st.dataframe(actual_cc_bill_df[['วันที่', 'รายการ', 'รายจ่าย', 'ประเภทการจ่าย', 'งวดปัจจุบัน', 'หมายเหตุ']].sort_values(by='วันที่'), use_container_width=True)
-            else:
-                st.warning("⚠️ กรุณาเลือกเดือนที่ต้องการดู Cashflow ค่ะ (ระบบไม่สามารถคำนวณแบบ 'ดูทั้งหมด' ได้)")
-
-else:
-    st.info("ยังไม่มีข้อมูลเลยค่ะ เจ้านายลองบันทึกรายการแรกดูนะคะ!")
+            else: st.warning("⚠️ กรุณาเลือกเดือนที่ต้องการดู Cashflow ค่ะ")
+else: st.info("ยังไม่มีข้อมูลเลยค่ะ เจ้านายลองบันทึกรายการแรกดูนะคะ!")
