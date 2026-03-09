@@ -187,19 +187,30 @@ st.markdown("---")
 # ==========================================
 st.markdown("### 📝 ตรวจสอบและบันทึกรายการ")
 
-# 💡 ลอจิกจำโหมดนักท่องเที่ยวจากรายการล่าสุด!
+# 💡 ลอจิกจำโหมดนักท่องเที่ยว ชื่อทริป และ "เรทแลกเปลี่ยนล่าสุด"
 default_tourist = False
 default_trip_name = "Japan 2026"
+default_rate = None
 
 if not df.empty:
     last_record_note = str(df.iloc[-1].get('หมายเหตุ', ''))
     if last_record_note.startswith("#"):
         default_tourist = True
-        match = re.search(r'^#(.+?)\s+\[', last_record_note)
-        if match:
-            default_trip_name = match.group(1).strip()
+        
+        # 1. ดึงชื่อทริป
+        match_trip = re.search(r'^#(.+?)\s+\[', last_record_note)
+        if match_trip:
+            default_trip_name = match_trip.group(1).strip()
         else:
             default_trip_name = last_record_note.split(' ')[0][1:]
+            
+        # 2. ดึงเรทแลกเปลี่ยน (หาตัวเลขที่อยู่หลัง @ และก่อน ])
+        match_rate = re.search(r'@([0-9.]+)]', last_record_note)
+        if match_rate:
+            try:
+                default_rate = float(match_rate.group(1))
+            except ValueError:
+                default_rate = None
 
 tourist_mode = st.toggle("✈️ โหมดนักท่องเที่ยว (แยกกระเป๋าทริป)", value=default_tourist)
 
@@ -240,7 +251,8 @@ if tourist_mode:
     st.markdown("🎌 **ข้อมูลสกุลเงินต่างประเทศ**")
     col_curr, col_rate = st.columns(2)
     with col_curr: curr = st.selectbox("สกุลเงิน", ["JPY (เยน)", "USD (ดอลลาร์)"])
-    with col_rate: rate = st.number_input("เรทแลกเปลี่ยน", value=None, format="%.4f", step=0.0100)
+    # 💡 ใส่เรทที่ดึงมาเป็น default
+    with col_rate: rate = st.number_input("เรทแลกเปลี่ยน", value=default_rate, format="%.4f", step=0.0100)
     amount_input = st.number_input(f"💰 จำนวนเงิน ({curr.split(' ')[0]})", min_value=0.0, format="%.2f", step=100.0, value=st.session_state.pre_amount, placeholder="0.00", key=f"amt_{st.session_state.form_reset}")
 else:
     amount_input = st.number_input("💰 จำนวนเงินทั้งหมด (บาท)", min_value=0.0, format="%.2f", step=100.0, value=st.session_state.pre_amount, placeholder="0.00", key=f"amt_{st.session_state.form_reset}")
@@ -333,7 +345,6 @@ st.markdown("---")
 # ==========================================
 st.markdown("### 📊 Dashboard วิเคราะห์ข้อมูล")
 
-# 💡 สวิตช์ Eco Mode ปิดไว้เพื่อประหยัดเน็ต (อยู่บนสุดของโซน Dashboard เลย)
 show_dashboard = st.toggle("📈 เปิดแสดงผล Dashboard (ประหยัดอินเทอร์เน็ต)", value=False)
 
 if show_dashboard:
