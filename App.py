@@ -86,7 +86,6 @@ df = load_data()
 # ==========================================
 # ส่วนที่ 1: ระบบสั่งงานด้วยเสียง (Voice Magic Input)
 # ==========================================
-# 💡 เปลี่ยนระบบหน่วยความจำให้เข้ากับช่อง Input แบบใหม่
 if 'pre_type' not in st.session_state: st.session_state.pre_type = "รายจ่าย 🔴"
 if 'pre_cat' not in st.session_state: st.session_state.pre_cat = "🍜 ค่าอาหาร/เครื่องดื่ม"
 if 'pre_chan' not in st.session_state: st.session_state.pre_chan = " 💵 เงินสด "
@@ -96,7 +95,6 @@ if 'note_input' not in st.session_state: st.session_state.note_input = ""
 def clear_voice_text():
     if "voice_input_key" in st.session_state:
         st.session_state.voice_input_key = ""
-    # 💡 สั่งล้างช่องตัวเลขและหมายเหตุด้วยเลยเวลากดปุ่มล้างคำ
     st.session_state.amount_input = None
     st.session_state.note_input = ""
     st.session_state.pre_type = "รายจ่าย 🔴"
@@ -121,7 +119,6 @@ if process_btn and st.session_state.voice_input_key:
         
     if "หมายเหตุ" in text:
         parts = text.split("หมายเหตุ", 1)
-        # 💡 ส่งข้อมูลเข้าช่อง Note โดยตรง
         st.session_state.note_input = parts[1].strip()
         text_to_search = parts[0] 
     else:
@@ -130,7 +127,6 @@ if process_btn and st.session_state.voice_input_key:
         
     amounts = re.findall(r'\d+(?:,\d+)*(?:\.\d+)?', text_to_search)
     if amounts: 
-        # 💡 ส่งข้อมูลเข้าช่องจำนวนเงินโดยตรง
         st.session_state.amount_input = float(amounts[0].replace(',', ''))
     else:
         st.session_state.amount_input = None
@@ -206,13 +202,10 @@ if tourist_mode:
     col_curr, col_rate = st.columns(2)
     with col_curr: curr = st.selectbox("สกุลเงิน", ["JPY (เยน)", "USD (ดอลลาร์)"])
     with col_rate: rate = st.number_input("เรทแลกเปลี่ยน", value=None, format="%.4f", step=0.0100)
-    # 💡 เอา value= ออก เพื่อให้มันใช้ข้อมูลจาก key โดยตรง
     amount_input = st.number_input(f"💰 จำนวนเงิน ({curr.split(' ')[0]})", min_value=0.0, format="%.2f", step=100.0, placeholder="0.00", key="amount_input")
 else:
-    # 💡 เอา value= ออก
     amount_input = st.number_input("💰 จำนวนเงินทั้งหมด (บาท)", min_value=0.0, format="%.2f", step=100.0, placeholder="0.00", key="amount_input")
 
-# 💡 เอา value= ออก
 note = st.text_input("📝 หมายเหตุ (ถ้ามี)", placeholder="หมายเหตุ:", key="note_input")
 
 st.markdown("""
@@ -282,7 +275,6 @@ if st.button("บันทึกข้อมูลลงตาราง", type="
 
         sheet.append_rows(rows_to_append)
         
-        # 💡 ล้างค่าหน่วยความจำหลังบันทึก
         st.session_state.amount_input = None
         st.session_state.note_input = ""
         st.session_state.pre_type = "รายจ่าย 🔴"
@@ -320,17 +312,22 @@ if not df.empty:
         else:
             st.info("ยังไม่มีข้อมูลบันทึกสำหรับทริปนี้ค่ะ")
     else:
-        tab1, tab2 = st.tabs(["📊 Dashboard หลัก", "💵 Cashflow (เงินสดจริง)"])
+        # 💡 ย้ายตัวเลือกเดือนขึ้นมาไว้ด้านบน ก่อนที่จะแยกแท็บ
         months_list = ["ดูทั้งหมด"] + sorted(df['เดือน-ปี'].unique().tolist(), reverse=True)
         current_m_str = pd.Timestamp.today().strftime('%Y-%m')
         try: default_index = months_list.index(current_m_str)
         except ValueError: default_index = 0 if len(months_list) == 1 else 1 
             
         sel_m = st.selectbox("📅 เลือกเดือนที่ต้องการดูข้อมูล:", months_list, index=default_index)
+        
+        # กรองข้อมูลตรงนี้เลย แล้วค่อยโยนให้แต่ละแท็บ
         f_df = df if sel_m == "ดูทั้งหมด" else df[df['เดือน-ปี'] == sel_m]
         total_income = f_df['รายรับ'].sum()
         total_expense = f_df['รายจ่าย'].sum()
         balance = total_income - total_expense
+        
+        # แยกแท็บหลักและ Cashflow
+        tab1, tab2 = st.tabs(["📊 Dashboard หลัก", "💵 Cashflow (เงินสดจริง)"])
 
         with tab1:
             col1, col2 = st.columns(2)
