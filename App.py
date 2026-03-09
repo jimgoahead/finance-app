@@ -135,11 +135,11 @@ if process_btn and st.session_state.voice_input_key:
     else:
         st.session_state.pre_amount = None
         
-    if any(word in text_to_search for word in ["ส่วนกลางจากปุ๊", "ส่วนกลางปุ๊"]): st.session_state.pre_cat = "👫 ค่าส่วนกลางจากปุ๊"  
+    if "เงินเดือน" in text_to_search: st.session_state.pre_cat = "💼 เงินเดือน"
+    elif any(word in text_to_search for word in ["ส่วนกลางจากปุ๊", "ส่วนกลางปุ๊"]): st.session_state.pre_cat = "👫 ค่าส่วนกลางจากปุ๊"  
     elif any(word in text_to_search for word in ["เงินคืน", "หารค่า"]): st.session_state.pre_cat = "💸 คืนเงิน/Cashback"  
     elif any(word in text_to_search for word in ["โบนัส", "เงินพิเศษ"]): st.session_state.pre_cat = "🎁 โบนัส/เงินพิเศษ"  
     elif any(word in text_to_search for word in ["ดอกเบี้ย", "หุ้น", "กำไร", "ปันผล"]): st.session_state.pre_cat = "📈 ดอกเบี้ย/ปันผล"      
-    elif "เงินเดือน" in text_to_search: st.session_state.pre_cat = "💼 เงินเดือน"
     elif any(word in text_to_search for word in ["เดินทาง", "รถ", "น้ำมัน", "ชาร์จ", "เรือ", "bts"]): st.session_state.pre_cat = "🚗 เดินทาง/เติมน้ำมัน"
     elif any(word in text_to_search for word in ["อาหาร", "กิน", "ดื่ม", "ข้าว", "กาแฟ"]): st.session_state.pre_cat = "🍜 ค่าอาหาร/เครื่องดื่ม"
     elif any(word in text_to_search for word in ["ช้อป", "ของใช้", "ซื้อ", "เซเว่น"]): st.session_state.pre_cat = "🛍️ ช้อปปิ้ง/ของใช้"
@@ -386,3 +386,4 @@ if not df.empty:
                         st.dataframe(actual_cc_bill_df[['วันที่', 'รายการ', 'รายจ่าย', 'ประเภทการจ่าย', 'งวดปัจจุบัน', 'หมายเหตุ']].sort_values(by='วันที่'), use_container_width=True)
             else: st.warning("⚠️ กรุณาเลือกเดือนที่ต้องการดู Cashflow ค่ะ")
 else: st.info("ยังไม่มีข้อมูลเลยค่ะ เจ้านายลองบันทึกรายการแรกดูนะคะ!")
+
