@@ -86,15 +86,22 @@ df = load_data()
 # ==========================================
 # ส่วนที่ 1: ระบบสั่งงานด้วยเสียง (Voice Magic Input)
 # ==========================================
+# 💡 เปลี่ยนระบบหน่วยความจำให้เข้ากับช่อง Input แบบใหม่
 if 'pre_type' not in st.session_state: st.session_state.pre_type = "รายจ่าย 🔴"
-if 'pre_amount' not in st.session_state: st.session_state.pre_amount = None
 if 'pre_cat' not in st.session_state: st.session_state.pre_cat = "🍜 ค่าอาหาร/เครื่องดื่ม"
 if 'pre_chan' not in st.session_state: st.session_state.pre_chan = " 💵 เงินสด "
-if 'pre_note' not in st.session_state: st.session_state.pre_note = ""
+if 'amount_input' not in st.session_state: st.session_state.amount_input = None
+if 'note_input' not in st.session_state: st.session_state.note_input = ""
 
 def clear_voice_text():
     if "voice_input_key" in st.session_state:
         st.session_state.voice_input_key = ""
+    # 💡 สั่งล้างช่องตัวเลขและหมายเหตุด้วยเลยเวลากดปุ่มล้างคำ
+    st.session_state.amount_input = None
+    st.session_state.note_input = ""
+    st.session_state.pre_type = "รายจ่าย 🔴"
+    st.session_state.pre_cat = "🍜 ค่าอาหาร/เครื่องดื่ม"
+    st.session_state.pre_chan = " 💵 เงินสด "
 
 st.markdown("### 🎙️ สั่งงานด้วยเสียง (Magic Input)")
 st.info("💡 **วิธีใช้:** แตะช่องสีฟ้า กดไมค์ที่คีย์บอร์ดมือถือเพื่อพูด แล้วกดปุ่ม ✨ แยกคำ")
@@ -114,14 +121,19 @@ if process_btn and st.session_state.voice_input_key:
         
     if "หมายเหตุ" in text:
         parts = text.split("หมายเหตุ", 1)
-        st.session_state.pre_note = parts[1].strip()
+        # 💡 ส่งข้อมูลเข้าช่อง Note โดยตรง
+        st.session_state.note_input = parts[1].strip()
         text_to_search = parts[0] 
     else:
-        st.session_state.pre_note = "" 
+        st.session_state.note_input = "" 
         text_to_search = text
         
     amounts = re.findall(r'\d+(?:,\d+)*(?:\.\d+)?', text_to_search)
-    if amounts: st.session_state.pre_amount = float(amounts[0].replace(',', ''))
+    if amounts: 
+        # 💡 ส่งข้อมูลเข้าช่องจำนวนเงินโดยตรง
+        st.session_state.amount_input = float(amounts[0].replace(',', ''))
+    else:
+        st.session_state.amount_input = None
         
     if any(word in text_to_search for word in ["ส่วนกลางจากปุ๊", "ส่วนกลางปุ๊"]): st.session_state.pre_cat = "👫 ค่าส่วนกลางจากปุ๊"  
     elif any(word in text_to_search for word in ["เงินคืน", "หารค่า"]): st.session_state.pre_cat = "💸 คืนเงิน/Cashback"  
@@ -194,14 +206,14 @@ if tourist_mode:
     col_curr, col_rate = st.columns(2)
     with col_curr: curr = st.selectbox("สกุลเงิน", ["JPY (เยน)", "USD (ดอลลาร์)"])
     with col_rate: rate = st.number_input("เรทแลกเปลี่ยน", value=None, format="%.4f", step=0.0100)
-    # 💡 ใส่ key="amount_input" เพื่อสั่งล้างค่าได้
-    amount_input = st.number_input(f"💰 จำนวนเงิน ({curr.split(' ')[0]})", min_value=0.0, format="%.2f", step=100.0, value=st.session_state.pre_amount, placeholder="0.00", key="amount_input")
+    # 💡 เอา value= ออก เพื่อให้มันใช้ข้อมูลจาก key โดยตรง
+    amount_input = st.number_input(f"💰 จำนวนเงิน ({curr.split(' ')[0]})", min_value=0.0, format="%.2f", step=100.0, placeholder="0.00", key="amount_input")
 else:
-    # 💡 ใส่ key="amount_input"
-    amount_input = st.number_input("💰 จำนวนเงินทั้งหมด (บาท)", min_value=0.0, format="%.2f", step=100.0, value=st.session_state.pre_amount, placeholder="0.00", key="amount_input")
+    # 💡 เอา value= ออก
+    amount_input = st.number_input("💰 จำนวนเงินทั้งหมด (บาท)", min_value=0.0, format="%.2f", step=100.0, placeholder="0.00", key="amount_input")
 
-# 💡 ใส่ key="note_input" เพื่อสั่งล้างค่าได้
-note = st.text_input("📝 หมายเหตุ (ถ้ามี)", value=st.session_state.pre_note, placeholder="หมายเหตุ:", key="note_input")
+# 💡 เอา value= ออก
+note = st.text_input("📝 หมายเหตุ (ถ้ามี)", placeholder="หมายเหตุ:", key="note_input")
 
 st.markdown("""
     <style>
@@ -270,18 +282,14 @@ if st.button("บันทึกข้อมูลลงตาราง", type="
 
         sheet.append_rows(rows_to_append)
         
-        # 💡 ล้างค่าหน่วยความจำ (Session State) ให้สะอาดหมดจด
-        st.session_state.pre_amount = None
-        st.session_state.pre_note = ""
+        # 💡 ล้างค่าหน่วยความจำหลังบันทึก
+        st.session_state.amount_input = None
+        st.session_state.note_input = ""
         st.session_state.pre_type = "รายจ่าย 🔴"
         st.session_state.pre_cat = "🍜 ค่าอาหาร/เครื่องดื่ม"
         st.session_state.pre_chan = " 💵 เงินสด "
-        
-        # 💡 บังคับล้างค่าช่องกรอกข้อมูลที่เจ้านายพิมพ์ค้างไว้
-        st.session_state.note_input = ""
-        st.session_state.amount_input = None
-        
         if "voice_input_key" in st.session_state: del st.session_state["voice_input_key"]
+        
         st.rerun()
 
 st.markdown("---")
