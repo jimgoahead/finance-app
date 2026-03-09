@@ -224,7 +224,7 @@ if process_btn and st.session_state.voice_input_key:
         st.session_state.pre_cat = "🏫 ค่าเรียนลูก"
     elif "ค่าเที่ยว" in text_to_search:
         st.session_state.pre_cat = "🎌 เงินเก็บค่าเที่ยวญี่ปุ่น"
-    elif any(word in text_to_search for word in ["เก็บส่วนกลาง", "ส่วนกลาง"]):
+    elif any(word in text_to_search for word in ["เงินเก็บ", "ส่วนกลาง"]):
         st.session_state.pre_cat = "🐷 เงินเก็บ/ส่วนกลาง"
     else:
         st.session_state.pre_cat = "📝 อื่นๆ"
@@ -459,6 +459,7 @@ if not df.empty:
             st.dataframe(filtered_df[cols_to_show].sort_values(by='วันที่', ascending=False), use_container_width=True)
 else:
     st.info("ยังไม่มีข้อมูลเลยค่ะ เจ้านายลองบันทึกรายการแรกดูนะคะ!")
+
 
 
 
