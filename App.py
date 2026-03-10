@@ -76,6 +76,19 @@ st.markdown("""
         border-color: #f44336 !important;
         font-weight: bold !important;
     }
+    button[kind="primary"] {
+        background-color: #00BFFF !important; 
+        color: white !important;
+        border-radius: 8px !important;
+        height: 50px !important;
+        font-weight: bold !important;
+        font-size: 18px !important;
+        border: none !important;
+    }
+    button[kind="primary"]:hover {
+        background-color: #009acd !important; 
+        border-color: #009acd !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -197,14 +210,12 @@ if not df.empty:
     if last_record_note.startswith("#"):
         default_tourist = True
         
-        # 1. ดึงชื่อทริป
         match_trip = re.search(r'^#(.+?)\s+\[', last_record_note)
         if match_trip:
             default_trip_name = match_trip.group(1).strip()
         else:
             default_trip_name = last_record_note.split(' ')[0][1:]
             
-        # 2. ดึงเรทแลกเปลี่ยน (หาตัวเลขที่อยู่หลัง @ และก่อน ])
         match_rate = re.search(r'@([0-9.]+)]', last_record_note)
         if match_rate:
             try:
@@ -251,31 +262,12 @@ if tourist_mode:
     st.markdown("🎌 **ข้อมูลสกุลเงินต่างประเทศ**")
     col_curr, col_rate = st.columns(2)
     with col_curr: curr = st.selectbox("สกุลเงิน", ["JPY (เยน)", "USD (ดอลลาร์)"])
-    # 💡 ใส่เรทที่ดึงมาเป็น default
     with col_rate: rate = st.number_input("เรทแลกเปลี่ยน", value=default_rate, format="%.4f", step=0.0100)
     amount_input = st.number_input(f"💰 จำนวนเงิน ({curr.split(' ')[0]})", min_value=0.0, format="%.2f", step=100.0, value=st.session_state.pre_amount, placeholder="0.00", key=f"amt_{st.session_state.form_reset}")
 else:
     amount_input = st.number_input("💰 จำนวนเงินทั้งหมด (บาท)", min_value=0.0, format="%.2f", step=100.0, value=st.session_state.pre_amount, placeholder="0.00", key=f"amt_{st.session_state.form_reset}")
 
 note = st.text_input("📝 หมายเหตุ (ถ้ามี)", value=st.session_state.pre_note, placeholder="หมายเหตุ:", key=f"note_{st.session_state.form_reset}")
-
-st.markdown("""
-    <style>
-    button[kind="primary"] {
-        background-color: #00BFFF !important; 
-        color: white !important;
-        border-radius: 8px !important;
-        height: 50px !important;
-        font-weight: bold !important;
-        font-size: 18px !important;
-        border: none !important;
-    }
-    button[kind="primary"]:hover {
-        background-color: #009acd !important; 
-        border-color: #009acd !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
 
 if st.button("บันทึกข้อมูลลงตาราง", type="primary", use_container_width=True):
     if amount_input is None or amount_input <= 0:
@@ -345,7 +337,11 @@ st.markdown("---")
 # ==========================================
 st.markdown("### 📊 Dashboard วิเคราะห์ข้อมูล")
 
-show_dashboard = st.toggle("📈 เปิดแสดงผล Dashboard (ประหยัดอินเทอร์เน็ต)", value=False)
+# 💡 ลอจิกใหม่: แสดงสวิตช์เฉพาะตอนอยู่โหมดนักท่องเที่ยวเท่านั้น
+if tourist_mode:
+    show_dashboard = st.toggle("📈 เปิดแสดงผล Dashboard (ประหยัดอินเทอร์เน็ต)", value=False)
+else:
+    show_dashboard = True # โหมดปกติ บังคับเปิด Dashboard ค้างไว้เลย
 
 if show_dashboard:
     if not df.empty:
@@ -360,10 +356,29 @@ if show_dashboard:
             st.markdown("#### ✈️ สรุปค่าใช้จ่ายแยกตามทริป")
             trip_search = st.text_input("พิมพ์ชื่อทริปที่ต้องการดู:", value=default_trip_name)
             f_df = df[df['หมายเหตุ'].str.contains(f"#{trip_search}", na=False)]
+            
             if not f_df.empty:
                 st.error(f"**รายจ่ายรวมทริป:**\n## ฿ {f_df['รายจ่าย'].sum():,.2f}")
-                fig_pie = px.pie(f_df[f_df['รายจ่าย'] > 0].groupby('รายการ', as_index=False)['รายจ่าย'].sum(), values='รายจ่าย', names='รายการ', hole=0.4)
+                
+                # 💡 เจนนี่แถมกราฟเส้นรายวัน (แบบคุณปุ๊) ให้เวอร์ชันเจ้านายด้วยนะคะ ทริปญี่ปุ่นจะได้ดูเพลินๆ!
+                st.markdown("##### 🍩 สัดส่วนค่าใช้จ่ายในทริปนี้")
+                cat_expense = f_df[f_df['รายจ่าย'] > 0].groupby('รายการ', as_index=False)['รายจ่าย'].sum()
+                fig_pie = px.pie(cat_expense, values='รายจ่าย', names='รายการ', hole=0.4, color_discrete_sequence=px.colors.qualitative.Pastel)
+                fig_pie.update_traces(textposition='inside', textinfo='percent+label', insidetextorientation='horizontal')
+                fig_pie.update_layout(showlegend=False, margin=dict(t=10, b=10, l=10, r=10))
                 st.plotly_chart(fig_pie, use_container_width=True)
+
+                st.markdown("##### 📈 ยอดใช้จ่ายรายวัน")
+                exp_only = f_df[f_df['รายจ่าย'] > 0].copy()
+                if not exp_only.empty:
+                    exp_only['วันที่_format'] = exp_only['วันที่'].dt.strftime('%Y-%m-%d')
+                    daily_expense = exp_only.groupby('วันที่_format', as_index=False)['รายจ่าย'].sum()
+                    
+                    fig_line = px.line(daily_expense, x='วันที่_format', y='รายจ่าย', markers=True, text='รายจ่าย')
+                    fig_line.update_traces(textposition="top center", texttemplate='%{text:,.0f}')
+                    fig_line.update_layout(margin=dict(t=10, b=10, l=10, r=10), xaxis_title="วันที่", yaxis_title="ยอดเงิน (บาท)")
+                    st.plotly_chart(fig_line, use_container_width=True)
+                
                 with st.expander("เปิดดูรายการทั้งหมดของทริปนี้"):
                     st.dataframe(f_df[['วันที่', 'รายการ', 'รายจ่าย', 'ช่องทาง', 'หมายเหตุ']].sort_values(by='วันที่', ascending=False), use_container_width=True)
             else:
@@ -388,6 +403,7 @@ if show_dashboard:
                 col1.success(f"**รายรับรวม:**\n### ฿ {total_income:,.2f}")
                 col2.error(f"**รายจ่ายรวม:**\n### ฿ {total_expense:,.2f}")
                 st.info(f"**ยอดคงเหลือ (ทางบัญชี):**\n## ฿ {balance:,.2f}")
+                
                 cc_expense_this_m = f_df[f_df['ช่องทาง'] == '💳 Credit Card']['รายจ่าย'].sum()
                 st.markdown(f"""
                 <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-left: 5px solid #64748b; padding: 15px; border-radius: 10px; margin-top: 10px; margin-bottom: 20px;">
@@ -395,6 +411,7 @@ if show_dashboard:
                     <h3 style="margin:0; color: #0f172a;">฿ {cc_expense_this_m:,.2f}</h3>
                 </div>
                 """, unsafe_allow_html=True)
+
                 st.markdown("#### 🏆 วิเคราะห์หมวดหมู่การใช้จ่าย")
                 expense_df = f_df[f_df['รายจ่าย'] > 0]
                 if not expense_df.empty:
@@ -436,5 +453,3 @@ if show_dashboard:
                 else: st.warning("⚠️ กรุณาเลือกเดือนที่ต้องการดู Cashflow ค่ะ")
     else:
         st.info("ยังไม่มีข้อมูลเลยค่ะ เจ้านายลองบันทึกรายการแรกดูนะคะ!")
-else:
-    st.caption("ℹ️ Dashboard ถูกซ่อนไว้เพื่อความรวดเร็วและประหยัดอินเทอร์เน็ตระหว่างเดินทางค่ะ")
