@@ -335,7 +335,7 @@ st.markdown("---")
 # ==========================================
 # ส่วนที่ 3: Dashboard & Cashflow Tabs
 # ==========================================
-st.markdown("### <span style='color: #00BFFF;'>📊 Super Dashboard Input</span>", unsafe_allow_html=True)
+st.markdown("### <span style='color: #00BFFF;'>📊 Super Dashboard</span>", unsafe_allow_html=True)
 
 # 💡 ลอจิกใหม่: แสดงสวิตช์เฉพาะตอนอยู่โหมดนักท่องเที่ยวเท่านั้น
 if tourist_mode:
@@ -453,6 +453,7 @@ if show_dashboard:
                 else: st.warning("⚠️ กรุณาเลือกเดือนที่ต้องการดู Cashflow ค่ะ")
     else:
         st.info("ยังไม่มีข้อมูลเลยค่ะ เจ้านายลองบันทึกรายการแรกดูนะคะ!")
+
 
 
 
