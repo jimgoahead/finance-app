@@ -437,7 +437,7 @@ if show_dashboard:
                     cc_inst_bill = actual_cc_bill_df[actual_cc_bill_df['ประเภทการจ่าย'] == 'ผ่อนชำระ']['รายจ่าย'].sum()
                     actual_cc_bill = cc_full_bill + cc_inst_bill
                     real_cashflow = true_cash - actual_cc_bill
-                    st.markdown(f"#### 💵 กระแสเงินสดสุทธิ (Cashflow) ประจำเดือน {sel_m}")
+                    st.markdown(f"#### <span style='color: #63CF86;'>💵 กระแสเงินสดสุทธิ (Cashflow) ประจำเดือน {sel_m}</span>", unsafe_allow_html=True)                    
                     st.info(f"**💰 เงินสดที่แท้จริงในมือ (ก่อนจ่ายบัตร):**\n## ฿ {true_cash:,.2f}\n*(ยอดคงเหลือทางบัญชี ฿{balance:,.2f} + เงินสดที่ยังไม่ออกเพราะรูดบัตร ฿{cc_expense_this_m:,.2f})*")
                     st.markdown(f"""
                     <div style="background-color: #fff1f2; border: 1px solid #fda4af; border-left: 5px solid #e11d48; padding: 15px; border-radius: 10px; margin-bottom: 15px; margin-top: 15px;">
@@ -453,6 +453,7 @@ if show_dashboard:
                 else: st.warning("⚠️ กรุณาเลือกเดือนที่ต้องการดู Cashflow ค่ะ")
     else:
         st.info("ยังไม่มีข้อมูลเลยค่ะ เจ้านายลองบันทึกรายการแรกดูนะคะ!")
+
 
 
 
