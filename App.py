@@ -412,7 +412,7 @@ if show_dashboard:
                 </div>
                 """, unsafe_allow_html=True)
 
-                st.markdown("### <span style='color: #E3D27B;'>🏆 วิเคราะห์การใช้จ่าย</span>", unsafe_allow_html=True)
+                st.markdown("### <span style='color: #E3D27B;'>🏆 Spending Insight</span>", unsafe_allow_html=True)
                 expense_df = f_df[f_df['รายจ่าย'] > 0]
                 if not expense_df.empty:
                     cat_expense = expense_df.groupby('รายการ', as_index=False)['รายจ่าย'].sum().sort_values(by='รายจ่าย', ascending=False)
@@ -453,6 +453,7 @@ if show_dashboard:
                 else: st.warning("⚠️ กรุณาเลือกเดือนที่ต้องการดู Cashflow ค่ะ")
     else:
         st.info("ยังไม่มีข้อมูลเลยค่ะ เจ้านายลองบันทึกรายการแรกดูนะคะ!")
+
 
 
 
