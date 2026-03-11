@@ -116,7 +116,7 @@ def clear_voice_text():
     st.session_state.pre_chan = " 💵 เงินสด "
     st.session_state.form_reset += 1 
 
-st.markdown("### 🎙️ สั่งงานด้วยเสียง (Magic Input)")
+st.markdown("### 🎙️ Voice Magic Input")
 st.info("💡 **วิธีใช้:** แตะช่องสีฟ้า กดไมค์ที่คีย์บอร์ดมือถือเพื่อพูด แล้วกดปุ่ม ✨ แยกคำ")
 
 voice_input = st.text_input("ข้อความเสียง:", key="voice_input_key", placeholder="แตะที่นี่แล้วพูด... เช่น: รายจ่ายค่าอาหาร 150 บาท จ่ายด้วย Kbank")
@@ -198,7 +198,7 @@ st.markdown("---")
 # ==========================================
 # ส่วนที่ 2: ฟอร์มตรวจสอบและบันทึก
 # ==========================================
-st.markdown("### 📝 ตรวจสอบและบันทึกรายการ")
+st.markdown("### 📝 Review & Record")
 
 # 💡 ลอจิกจำโหมดนักท่องเที่ยว ชื่อทริป และ "เรทแลกเปลี่ยนล่าสุด"
 default_tourist = False
@@ -335,7 +335,7 @@ st.markdown("---")
 # ==========================================
 # ส่วนที่ 3: Dashboard & Cashflow Tabs
 # ==========================================
-st.markdown("### 📊 Dashboard วิเคราะห์ข้อมูล")
+st.markdown("### 📊 Super Dashboard ")
 
 # 💡 ลอจิกใหม่: แสดงสวิตช์เฉพาะตอนอยู่โหมดนักท่องเที่ยวเท่านั้น
 if tourist_mode:
@@ -453,4 +453,5 @@ if show_dashboard:
                 else: st.warning("⚠️ กรุณาเลือกเดือนที่ต้องการดู Cashflow ค่ะ")
     else:
         st.info("ยังไม่มีข้อมูลเลยค่ะ เจ้านายลองบันทึกรายการแรกดูนะคะ!")
+
 
