@@ -92,7 +92,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.title("💸 แอปรายรับ-รายจ่าย ประจำวัน")
+st.title("💸 ::CashDiary::")
 
 df = load_data()
 
@@ -453,3 +453,4 @@ if show_dashboard:
                 else: st.warning("⚠️ กรุณาเลือกเดือนที่ต้องการดู Cashflow ค่ะ")
     else:
         st.info("ยังไม่มีข้อมูลเลยค่ะ เจ้านายลองบันทึกรายการแรกดูนะคะ!")
+
