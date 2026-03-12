@@ -10,15 +10,18 @@ import re
 # ส่วนตั้งค่าการเชื่อมต่อ Google Sheets
 # ==========================================
 scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-
-@st.cache_resource
-def init_connection():
-    if "google_credentials" in st.secrets:
-        creds_dict = json.loads(st.secrets["google_credentials"])
-        creds = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-    else:
-        creds = Credentials.from_service_account_file("credentials.json", scopes=scopes)
-        
+try:
+    # อ่านกุญแจจาก Streamlit Secrets แทนการใช้ไฟล์ .json
+    creds_dict = st.secrets["gcp_service_account"]
+    creds = ServiceAccountCredentials.from_json_key_dict(creds_dict, scope)
+    client = gspread.authorize(creds)
+    
+    sheet = client.open("JiJi_Learning_Journey")
+    ws_course = sheet.worksheet("Course_Master")
+    ws_log = sheet.worksheet("Attendance_Log")
+except Exception as e:
+    st.error(f"⚠️ การเชื่อมต่อผิดพลาด: {e}")
+    st.stop()
     client = gspread.authorize(creds)
     return client
 
@@ -453,6 +456,7 @@ if show_dashboard:
                 else: st.warning("⚠️ กรุณาเลือกเดือนที่ต้องการดู Cashflow ค่ะ")
     else:
         st.info("ยังไม่มีข้อมูลเลยค่ะ เจ้านายลองบันทึกรายการแรกดูนะคะ!")
+
 
 
 
