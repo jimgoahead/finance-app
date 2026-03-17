@@ -101,7 +101,7 @@ df = load_data()
 # ==========================================
 if 'pre_type' not in st.session_state: st.session_state.pre_type = "รายจ่าย 🔴"
 if 'pre_cat' not in st.session_state: st.session_state.pre_cat = "🍜 ค่าอาหาร/เครื่องดื่ม"
-if 'pre_chan' not in st.session_state: st.session_state.pre_chan = " 💵 เงินสด "
+if 'pre_chan' not in st.session_state: st.session_state.pre_chan = " 🟢 K-BANK "
 if 'pre_amount' not in st.session_state: st.session_state.pre_amount = None
 if 'pre_note' not in st.session_state: st.session_state.pre_note = ""
 if 'form_reset' not in st.session_state: st.session_state.form_reset = 0
@@ -113,7 +113,7 @@ def clear_voice_text():
     st.session_state.pre_note = ""
     st.session_state.pre_type = "รายจ่าย 🔴"
     st.session_state.pre_cat = "🍜 ค่าอาหาร/เครื่องดื่ม"
-    st.session_state.pre_chan = " 💵 เงินสด "
+    st.session_state.pre_chan = " 🟢 K-BANK "
     st.session_state.form_reset += 1 
 
 st.markdown("### <span style='color: #00BFFF;'>🎙️ Voice Magic Input</span>", unsafe_allow_html=True)
@@ -188,7 +188,7 @@ if process_btn and st.session_state.voice_input_key:
     elif any(word in text_to_search for word in ["scb", "ไทยพาณิชย์"]): st.session_state.pre_chan = "🟣 SCB"
     elif any(word in text_to_search for word in ["ktb", "กรุงไทย"]): st.session_state.pre_chan = "🦅 KTB"
     elif any(word in text_to_search for word in ["บัตร", "เครดิต", "credit"]): st.session_state.pre_chan = "💳 Credit Card"
-    else: st.session_state.pre_chan = " 💵 เงินสด "
+    else: st.session_state.pre_chan = " 🟢 K-BANK "
         
     st.session_state.form_reset += 1 
     st.rerun()
@@ -398,7 +398,7 @@ if show_dashboard:
             total_expense = f_df['รายจ่าย'].sum()
             balance = total_income - total_expense
             
-            tab1, tab2 = st.tabs(["📊 Dashboard หลัก", "💵 Cashflow (เงินสดจริง)"])
+            tab1, tab2 = st.tabs(["📊 Dashboard หลัก", "💵 Cashflow (จริง)"])
 
             with tab1:
                 col1, col2 = st.columns(2)
