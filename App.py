@@ -242,9 +242,10 @@ try: cat_idx = category_options.index(st.session_state.pre_cat)
 except ValueError: cat_idx = 0
 category = st.selectbox("🏷️ หมวดหมู่", category_options, index=cat_idx)
 
-channel_options = ["💳 Credit Card", "🦅 KTB", "🟢 K-BANK", "🟣 SCB", " 💵 เงินสด ", "📝อื่นๆ"]
+# 💡 อัปเดตการเรียงลำดับช่องทางชำระเงินตามที่เจ้านายสั่ง
+channel_options = ["🟢 K-BANK", "💳 Credit Card", "🦅 KTB", "🟣 SCB", " 💵 เงินสด ", "📝อื่นๆ"]
 try: chan_idx = channel_options.index(st.session_state.pre_chan)
-except ValueError: chan_idx = 4 
+except ValueError: chan_idx = 0 # 💡 เปลี่ยน Default Index เป็น 0 (K-BANK)
 channel = st.radio("🏦 ช่องทาง", channel_options, index=chan_idx, horizontal=True)
 
 payment_type = "จ่ายเต็ม"
@@ -324,7 +325,8 @@ if st.button("บันทึกข้อมูลลงตาราง", type="
         st.session_state.pre_note = ""
         st.session_state.pre_type = "รายจ่าย 🔴"
         st.session_state.pre_cat = "🍜 ค่าอาหาร/เครื่องดื่ม"
-        st.session_state.pre_chan = " 💵 เงินสด "
+        # 💡 เปลี่ยน Default ของการ Reset ฟอร์มให้กลับมาเป็น K-BANK ด้วยค่ะ
+        st.session_state.pre_chan = "🟢 K-BANK"
         st.session_state.form_reset += 1 
         if "voice_input_key" in st.session_state: del st.session_state["voice_input_key"]
         
