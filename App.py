@@ -242,10 +242,9 @@ try: cat_idx = category_options.index(st.session_state.pre_cat)
 except ValueError: cat_idx = 0
 category = st.selectbox("🏷️ หมวดหมู่", category_options, index=cat_idx)
 
-# 💡 อัปเดตการเรียงลำดับช่องทางชำระเงินตามที่เจ้านายสั่ง
 channel_options = ["🟢 K-BANK", "💳 Credit Card", "🦅 KTB", "🟣 SCB", " 💵 เงินสด ", "📝อื่นๆ"]
 try: chan_idx = channel_options.index(st.session_state.pre_chan)
-except ValueError: chan_idx = 0 # 💡 เปลี่ยน Default Index เป็น 0 (K-BANK)
+except ValueError: chan_idx = 0 
 channel = st.radio("🏦 ช่องทาง", channel_options, index=chan_idx, horizontal=True)
 
 payment_type = "จ่ายเต็ม"
@@ -325,8 +324,7 @@ if st.button("บันทึกข้อมูลลงตาราง", type="
         st.session_state.pre_note = ""
         st.session_state.pre_type = "รายจ่าย 🔴"
         st.session_state.pre_cat = "🍜 ค่าอาหาร/เครื่องดื่ม"
-        # 💡 เปลี่ยน Default ของการ Reset ฟอร์มให้กลับมาเป็น K-BANK ด้วยค่ะ
-        st.session_state.pre_chan = "🟢 K-BANK"
+        st.session_state.pre_chan = " 🟢 K-BANK "
         st.session_state.form_reset += 1 
         if "voice_input_key" in st.session_state: del st.session_state["voice_input_key"]
         
@@ -339,11 +337,10 @@ st.markdown("---")
 # ==========================================
 st.markdown("### <span style='color: #00BFFF;'>📊 Super Dashboard</span>", unsafe_allow_html=True)
 
-# 💡 ลอจิกใหม่: แสดงสวิตช์เฉพาะตอนอยู่โหมดนักท่องเที่ยวเท่านั้น
 if tourist_mode:
     show_dashboard = st.toggle("📈 เปิดแสดงผล Dashboard (ประหยัดอินเทอร์เน็ต)", value=False)
 else:
-    show_dashboard = True # โหมดปกติ บังคับเปิด Dashboard ค้างไว้เลย
+    show_dashboard = True 
 
 if show_dashboard:
     if not df.empty:
@@ -352,6 +349,8 @@ if show_dashboard:
         df['วันที่'] = pd.to_datetime(df['วันที่'])
         df['เดือน-ปี'] = df['วันที่'].dt.strftime('%Y-%m')
         df['เดือนที่จ่ายบิล'] = df['เดือนที่จ่ายบิล'].replace('', pd.NA).fillna(df['เดือน-ปี'])
+        # 💡 สร้างคอลัมน์ 'วันในสัปดาห์' สำหรับวิเคราะห์พฤติกรรม
+        df['วันในสัปดาห์'] = df['วันที่'].dt.day_name()
         
         if tourist_mode:
             df['หมายเหตุ'] = df['หมายเหตุ'].fillna('')
@@ -362,7 +361,6 @@ if show_dashboard:
             if not f_df.empty:
                 st.error(f"**รายจ่ายรวมทริป:**\n## ฿ {f_df['รายจ่าย'].sum():,.2f}")
                 
-                # 💡 เจนนี่แถมกราฟเส้นรายวัน (แบบคุณปุ๊) ให้เวอร์ชันเจ้านายด้วยนะคะ ทริปญี่ปุ่นจะได้ดูเพลินๆ!
                 st.markdown("##### 🍩 สัดส่วนค่าใช้จ่ายในทริปนี้")
                 cat_expense = f_df[f_df['รายจ่าย'] > 0].groupby('รายการ', as_index=False)['รายจ่าย'].sum()
                 fig_pie = px.pie(cat_expense, values='รายจ่าย', names='รายการ', hole=0.4, color_discrete_sequence=px.colors.qualitative.Pastel)
@@ -398,7 +396,8 @@ if show_dashboard:
             total_expense = f_df['รายจ่าย'].sum()
             balance = total_income - total_expense
             
-            tab1, tab2 = st.tabs(["📊 Dashboard หลัก", "💵 Cashflow (จริง)"])
+            # 💡 เพิ่ม Tab ที่ 3 สำหรับ Behavioral Insight
+            tab1, tab2, tab3 = st.tabs(["📊 Dashboard หลัก", "💵 Cashflow (เงินสดจริง)", "💡 Behavioral Insight"])
 
             with tab1:
                 col1, col2 = st.columns(2)
@@ -453,14 +452,63 @@ if show_dashboard:
                         with st.expander("🧾 ดูรายละเอียดบิลบัตรเครดิตที่เรียกเก็บเดือนนี้"):
                             st.dataframe(actual_cc_bill_df[['วันที่', 'รายการ', 'รายจ่าย', 'ประเภทการจ่าย', 'งวดปัจจุบัน', 'หมายเหตุ']].sort_values(by='วันที่'), use_container_width=True)
                 else: st.warning("⚠️ กรุณาเลือกเดือนที่ต้องการดู Cashflow ค่ะ")
+                
+            # ==========================================
+            # 💡 Tab 3: Behavioral Insight (กิน-ช้อป)
+            # ==========================================
+            with tab3:
+                st.markdown("### 💡 เจาะลึกพฤติกรรม กิน-ช้อป")
+                target_cats = ["🍜 ค่าอาหาร/เครื่องดื่ม", "🛍️ ช้อปปิ้ง/ของใช้"]
+                behavior_df = f_df[(f_df['รายการ'].isin(target_cats)) & (f_df['รายจ่าย'] > 0)]
+                
+                if not behavior_df.empty:
+                    # 1. แสดงค่าเฉลี่ยต่อวัน (หาจำนวนวันที่บันทึกในเดือนนั้น ไม่ใช่ /30 ตายตัว)
+                    active_days = behavior_df['วันที่'].nunique() if not behavior_df['วันที่'].nunique() == 0 else 1
+                    
+                    food_df = behavior_df[behavior_df['รายการ'] == "🍜 ค่าอาหาร/เครื่องดื่ม"]
+                    shop_df = behavior_df[behavior_df['รายการ'] == "🛍️ ช้อปปิ้ง/ของใช้"]
+                    
+                    avg_food = food_df['รายจ่าย'].sum() / active_days
+                    avg_shop = shop_df['รายจ่าย'].sum() / active_days
+                    
+                    st.markdown("#### 🎯 งบเฉลี่ยที่ใช้ไปต่อวัน (Daily Budget Limit)")
+                    col_f, col_s = st.columns(2)
+                    col_f.metric("🍜 ค่ากินเฉลี่ย/วัน", f"฿ {avg_food:,.0f}", delta="เทียบจากวันที่บันทึก", delta_color="off")
+                    col_s.metric("🛍️ ค่าช้อปเฉลี่ย/วัน", f"฿ {avg_shop:,.0f}", delta="เทียบจากวันที่บันทึก", delta_color="off")
+                    
+                    st.markdown("---")
+                    
+                    # 2. กราฟเปรียบเทียบตามวันในสัปดาห์ (Weekly Danger Zone)
+                    st.markdown("#### ⚠️ วันอันตราย (Weekly Heatmap)")
+                    day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+                    day_names_th = {'Monday':'จันทร์', 'Tuesday':'อังคาร', 'Wednesday':'พุธ', 'Thursday':'พฤหัส', 'Friday':'ศุกร์', 'Saturday':'เสาร์', 'Sunday':'อาทิตย์'}
+                    
+                    weekly_data = behavior_df.groupby(['วันในสัปดาห์', 'รายการ'])['รายจ่าย'].sum().reset_index()
+                    # แปลงเป็นภาษาไทยให้ดูง่ายขึ้น
+                    weekly_data['วันในสัปดาห์'] = pd.Categorical(weekly_data['วันในสัปดาห์'], categories=day_order, ordered=True)
+                    weekly_data = weekly_data.sort_values('วันในสัปดาห์')
+                    weekly_data['วัน'] = weekly_data['วันในสัปดาห์'].map(day_names_th)
+                    
+                    fig_behavior = px.bar(weekly_data, x='วัน', y='รายจ่าย', color='รายการ', barmode='group',
+                                          title="ยอดรวมใช้จ่าย (แยกตามวันในสัปดาห์)",
+                                          color_discrete_map={"🍜 ค่าอาหาร/เครื่องดื่ม": "#F39C12", "🛍️ ช้อปปิ้ง/ของใช้": "#9B59B6"})
+                    st.plotly_chart(fig_behavior, use_container_width=True)
+                    
+                    st.markdown("---")
+                    
+                    # 3. กราฟเส้นรายวัน (Monthly Spending Trend)
+                    st.markdown("#### 📉 แนวโน้มพฤติกรรมทั้งเดือน (Spending Trend)")
+                    trend_data = behavior_df.groupby([behavior_df['วันที่'].dt.strftime('%Y-%m-%d'), 'รายการ'])['รายจ่าย'].sum().reset_index()
+                    trend_data.rename(columns={'วันที่': 'วันที่_format'}, inplace=True)
+                    
+                    fig_trend = px.line(trend_data, x='วันที่_format', y='รายจ่าย', color='รายการ', markers=True,
+                                        title="กราฟแสดงการใช้จ่ายรายวันตลอดเดือน",
+                                        color_discrete_map={"🍜 ค่าอาหาร/เครื่องดื่ม": "#F39C12", "🛍️ ช้อปปิ้ง/ของใช้": "#9B59B6"})
+                    fig_trend.update_layout(xaxis_title="วันที่", yaxis_title="ยอดเงิน (บาท)", legend_title_text='')
+                    st.plotly_chart(fig_trend, use_container_width=True)
+
+                else:
+                    st.info("ยังไม่มีข้อมูลค่ากิน หรือค่าช้อปในเดือนนี้ค่ะ (รอดตัวไปนะคะเจ้านาย!)")
+
     else:
         st.info("ยังไม่มีข้อมูลเลยค่ะ เจ้านายลองบันทึกรายการแรกดูนะคะ!")
-
-
-
-
-
-
-
-
-
