@@ -394,7 +394,7 @@ if show_dashboard:
             balance = total_income - total_expense
             
             # 💡 เพิ่ม Tab ที่ 3 สุดล้ำ!
-            tab1, tab2, tab3 = st.tabs(["📊 Dashboard หลัก", "💵 Cashflow (เงินสดจริง)", "💡 Behavioral Insight"])
+            tab1, tab2, tab3 = st.tabs(["📊 Summary", "💵 Cashflow", "💡 Behavioral Insight"])
 
             with tab1:
                 col1, col2 = st.columns(2)
