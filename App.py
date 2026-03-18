@@ -454,7 +454,7 @@ if show_dashboard:
             # 💡 Tab 3: Behavioral Insight (พฤติกรรม กิน-ช้อป)
             # ==========================================
             with tab3:
-                st.markdown("### <span style='color: #FF69B4;'>💡 เจาะลึก กิน-ช้อป</span>", unsafe_allow_html=True)
+                st.markdown("### <span style='color: #FF69B4;'>💡 เจาะลึก กิน-ช้อป The Money Vibe Report</span>", unsafe_allow_html=True)
                 target_cats = ["🍜 ค่าอาหาร/เครื่องดื่ม", "🛍️ ช้อปปิ้ง/ของใช้"]
                 
                 # กรองข้อมูลเฉพาะหมวดกินช้อป และคัดลอกมาเพื่อจัดการ
@@ -479,7 +479,7 @@ if show_dashboard:
                     st.markdown("---")
                     
                     # --- 2. แชมป์เปี้ยนประจำเดือน ---
-                    st.markdown("### <span style='color: #B8C240;'>👑 Champion of the Month</span>", unsafe_allow_html=True)
+                    st.markdown("### <span style='color: #B8C240;'>👑 Big Spendeing Award</span>", unsafe_allow_html=True)
                     if not food_df.empty:
                         max_food = food_df.loc[food_df['รายจ่าย'].idxmax()]
                         note_f = max_food['หมายเหตุ'] if max_food['หมายเหตุ'] else "ไม่มีหมายเหตุ"
@@ -493,7 +493,7 @@ if show_dashboard:
                     st.markdown("---")
                     
                     # --- 3. วันอันตราย (Top 3 Days) แนวนอน ---
-                    st.markdown("### <span style='color: #D10D44;'>⚠️ Top 3 Days</span>", unsafe_allow_html=True)
+                    st.markdown("### <span style='color: #D10D44;'>⚠️ Money Leak Days</span>", unsafe_allow_html=True)
                     daily_sum = b_df.groupby('วันที่')['รายจ่าย'].sum().reset_index()
                     daily_sum = daily_sum.sort_values('รายจ่าย', ascending=False).head(3)
                     
