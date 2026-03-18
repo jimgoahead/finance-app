@@ -454,7 +454,7 @@ if show_dashboard:
             # 💡 Tab 3: Behavioral Insight (พฤติกรรม กิน-ช้อป)
             # ==========================================
             with tab3:
-                st.markdown("### <span style='color: #ED6E0C;'>💡 เจาะลึก กิน-ช้อป   The Money Vibe Report</span>", unsafe_allow_html=True)
+                st.markdown("### <span style='color: #ED6E0C;'>💡 เจาะลึก กิน-ช้อป <br> The Money Vibe Report</span>", unsafe_allow_html=True)
                 target_cats = ["🍜 ค่าอาหาร/เครื่องดื่ม", "🛍️ ช้อปปิ้ง/ของใช้"]
                 
                 # กรองข้อมูลเฉพาะหมวดกินช้อป และคัดลอกมาเพื่อจัดการ
