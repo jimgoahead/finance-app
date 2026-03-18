@@ -454,7 +454,7 @@ if show_dashboard:
             # 💡 Tab 3: Behavioral Insight (พฤติกรรม กิน-ช้อป)
             # ==========================================
             with tab3:
-                st.markdown("### <span style='color: #FF69B4;'>💡 เจาะลึก กิน-ช้อป The Money Vibe Report</span>", unsafe_allow_html=True)
+                st.markdown("### <span style='color: #ED6E0C;'>💡 เจาะลึก กิน-ช้อป   The Money Vibe Report</span>", unsafe_allow_html=True)
                 target_cats = ["🍜 ค่าอาหาร/เครื่องดื่ม", "🛍️ ช้อปปิ้ง/ของใช้"]
                 
                 # กรองข้อมูลเฉพาะหมวดกินช้อป และคัดลอกมาเพื่อจัดการ
@@ -471,7 +471,7 @@ if show_dashboard:
                     avg_shop = shop_df['รายจ่าย'].sum() / active_days
                     
                     # --- 1. การ์ดสรุปยอดเฉลี่ย ---
-                    st.markdown("### <span style='color: #E049E6;'>🎯 Daily Average</span>", unsafe_allow_html=True)
+                    st.markdown("### <span style='color: #FF69B4;'>🎯 Daily Average</span>", unsafe_allow_html=True)
                     col1, col2 = st.columns(2)
                     col1.metric("🍜 ค่ากินเฉลี่ย/วัน", f"฿ {avg_food:,.0f}")
                     col2.metric("🛍️ ค่าช้อปเฉลี่ย/วัน", f"฿ {avg_shop:,.0f}")
@@ -509,7 +509,7 @@ if show_dashboard:
                     st.markdown("---")
                     
                     # --- 4. Fun Insights ---
-                    st.markdown("### <span style='color: #ED6E0C;'>🕵️ Fun Fact</span>", unsafe_allow_html=True)
+                    st.markdown("### <span style='color: #1F6EE0;'>🕵️ Fun Fact</span>", unsafe_allow_html=True)
                   
                     b_df['is_weekend'] = b_df['วันที่'].dt.dayofweek >= 5
                     weekend_expense = b_df[b_df['is_weekend']]['รายจ่าย'].sum()
