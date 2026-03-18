@@ -479,7 +479,7 @@ if show_dashboard:
                     st.markdown("---")
                     
                     # --- 2. แชมป์เปี้ยนประจำเดือน ---
-                    st.markdown("### <span style='color: #B8C240;'>👑 Big Spendeing Award</span>", unsafe_allow_html=True)
+                    st.markdown("### <span style='color: #B8C240;'>👑 Big Spending Award</span>", unsafe_allow_html=True)
                     if not food_df.empty:
                         max_food = food_df.loc[food_df['รายจ่าย'].idxmax()]
                         note_f = max_food['หมายเหตุ'] if max_food['หมายเหตุ'] else "ไม่มีหมายเหตุ"
