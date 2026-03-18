@@ -454,7 +454,7 @@ if show_dashboard:
             # 💡 Tab 3: Behavioral Insight (พฤติกรรม กิน-ช้อป)
             # ==========================================
             with tab3:
-                st.markdown("### <span style='color: #FF69B4;'>💡 เจาะลึกพฤติกรรม กิน-ช้อป</span>", unsafe_allow_html=True)
+                st.markdown("### <span style='color: #FF69B4;'>💡 เจาะลึก กิน-ช้อป</span>", unsafe_allow_html=True)
                 target_cats = ["🍜 ค่าอาหาร/เครื่องดื่ม", "🛍️ ช้อปปิ้ง/ของใช้"]
                 
                 # กรองข้อมูลเฉพาะหมวดกินช้อป และคัดลอกมาเพื่อจัดการ
@@ -471,7 +471,7 @@ if show_dashboard:
                     avg_shop = shop_df['รายจ่าย'].sum() / active_days
                     
                     # --- 1. การ์ดสรุปยอดเฉลี่ย ---
-                    st.markdown("#### 🎯 งบเฉลี่ยที่ใช้ไปต่อวัน (Daily Budget)")
+                    st.markdown("### <span style='color: #E049E6;'>🎯 งบเฉลี่ยที่ใช้ไปต่อวัน</span>", unsafe_allow_html=True)
                     col1, col2 = st.columns(2)
                     col1.metric("🍜 ค่ากินเฉลี่ย/วัน", f"฿ {avg_food:,.0f}")
                     col2.metric("🛍️ ค่าช้อปเฉลี่ย/วัน", f"฿ {avg_shop:,.0f}")
@@ -479,7 +479,7 @@ if show_dashboard:
                     st.markdown("---")
                     
                     # --- 2. แชมป์เปี้ยนประจำเดือน ---
-                    st.markdown("#### 👑 แชมป์เปี้ยนยอดจ่ายสูงสุด (The Most Expensive)")
+                    st.markdown("### <span style='color: #B8C240;'>👑 แชมป์เปี้ยนยอดจ่ายสูงสุด</span>", unsafe_allow_html=True)
                     if not food_df.empty:
                         max_food = food_df.loc[food_df['รายจ่าย'].idxmax()]
                         note_f = max_food['หมายเหตุ'] if max_food['หมายเหตุ'] else "ไม่มีหมายเหตุ"
@@ -493,7 +493,7 @@ if show_dashboard:
                     st.markdown("---")
                     
                     # --- 3. วันอันตราย (Top 3 Days) แนวนอน ---
-                    st.markdown("#### ⚠️ 3 อันดับวันอันตราย (กระเป๋ารั่วที่สุด)")
+                    st.markdown("### <span style='color: #D10D44;'>⚠️ 3 อันดับวันกระเป๋ารั่ว</span>", unsafe_allow_html=True)
                     daily_sum = b_df.groupby('วันที่')['รายจ่าย'].sum().reset_index()
                     daily_sum = daily_sum.sort_values('รายจ่าย', ascending=False).head(3)
                     
@@ -509,7 +509,8 @@ if show_dashboard:
                     st.markdown("---")
                     
                     # --- 4. Fun Insights ---
-                    st.markdown("#### 🕵️ สถิติพฤติกรรมน่ารู้")
+                    st.markdown("### <span style='color: #ED6E0C;'>🕵️ Fun Fact</span>", unsafe_allow_html=True)
+                  
                     b_df['is_weekend'] = b_df['วันที่'].dt.dayofweek >= 5
                     weekend_expense = b_df[b_df['is_weekend']]['รายจ่าย'].sum()
                     weekday_expense = b_df[~b_df['is_weekend']]['รายจ่าย'].sum()
