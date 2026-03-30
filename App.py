@@ -73,7 +73,7 @@ st.markdown("""
         font-weight: bold !important;
         font-size: 24px !important;
         text-align: center !important;
-        opacity: 1 !important; /* บังคับความชัด 100% */
+        opacity: 0.8 !important; /* บังคับความชัด 100% */
     }
 
     /* 3. ปุ่มบันทึกและปุ่มล้างคำ (เขียว/แดง) */
