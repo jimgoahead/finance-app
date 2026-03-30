@@ -45,6 +45,7 @@ st.set_page_config(page_title="ระบบจัดการรายรับ-
 
 st.markdown("""
     <style>
+    /* ช่อง Voice Magic Input */
     div[data-testid="stTextInput"] label { display: none; }
     div[data-testid="stTextInput"]:has(input[placeholder*="แตะที่นี่แล้วพูด"]) div[data-baseweb="base-input"] {
         background-color: #e0f7fa !important;
@@ -52,29 +53,28 @@ st.markdown("""
         border-radius: 8px !important;
         padding: 5px !important;
     }
-    div[data-testid="stTextInput"]:has(input[placeholder*="แตะที่นี่แล้วพูด"]) input {
-        color: #000000 !important; 
-        -webkit-text-fill-color: #000000 !important; 
+
+    /* 💰 จุดเปลี่ยนสีช่องใส่ยอดเงิน (Number Input) */
+    div[data-testid="stNumberInput"] div[data-baseweb="input"] {
+        background-color: #fff9c4 !important; /* สีเหลืองทองอ่อน */
+        border: 2px solid #00BFFF !important; /* ขอบสีฟ้าตามธีมแอป */
+        border-radius: 10px !important;
+    }
+    div[data-testid="stNumberInput"] input {
+        color: #000000 !important;
         font-weight: bold !important;
-        font-size: 16px !important;
+        font-size: 22px !important; /* ตัวเลขใหญ่สะใจ */
+        text-align: center !important; /* จัดตัวเลขไว้ตรงกลาง */
     }
-    div[data-testid="stTextInput"]:has(input[placeholder*="แตะที่นี่แล้วพูด"]) input::placeholder {
-        color: #9e9e9e !important;
-        -webkit-text-fill-color: #9e9e9e !important;
-        font-weight: normal !important; 
-        opacity: 1 !important;
-    }
+
+    /* ปุ่มบันทึก */
     div[data-testid="stColumn"]:nth-child(1) div[data-testid="stButton"] button {
         background-color: #4CAF50 !important;
         color: white !important;
-        border-color: #4CAF50 !important;
-        font-weight: bold !important;
     }
     div[data-testid="stColumn"]:nth-child(2) div[data-testid="stButton"] button {
         background-color: #f44336 !important;
         color: white !important;
-        border-color: #f44336 !important;
-        font-weight: bold !important;
     }
     button[kind="primary"] {
         background-color: #00BFFF !important; 
@@ -83,11 +83,6 @@ st.markdown("""
         height: 50px !important;
         font-weight: bold !important;
         font-size: 18px !important;
-        border: none !important;
-    }
-    button[kind="primary"]:hover {
-        background-color: #009acd !important; 
-        border-color: #009acd !important;
     }
     </style>
 """, unsafe_allow_html=True)
