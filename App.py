@@ -407,6 +407,8 @@ if show_dashboard:
             else:
                 st.info("ยังไม่มีข้อมูลบันทึกสำหรับทริปนี้ค่ะ")
         else:
+            st.button("🔄 ดึงข้อมูลล่าสุดจาก Google Sheets", on_click=refresh_data, use_container_width=True)
+            
             months_list = ["ดูทั้งหมด"] + sorted(df['เดือน-ปี'].unique().tolist(), reverse=True)
             current_m_str = pd.Timestamp.today().strftime('%Y-%m')
             try: default_index = months_list.index(current_m_str)
