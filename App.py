@@ -45,7 +45,7 @@ st.set_page_config(page_title="ระบบจัดการรายรับ-
 
 st.markdown("""
     <style>
-    /* ช่อง Voice Magic Input */
+    /* 1. ช่อง Voice Magic Input (สีฟ้าอ่อน) */
     div[data-testid="stTextInput"] label { display: none; }
     div[data-testid="stTextInput"]:has(input[placeholder*="แตะที่นี่แล้วพูด"]) div[data-baseweb="base-input"] {
         background-color: #e0f7fa !important;
@@ -53,29 +53,42 @@ st.markdown("""
         border-radius: 8px !important;
         padding: 5px !important;
     }
+    div[data-testid="stTextInput"]:has(input[placeholder*="แตะที่นี่แล้วพูด"]) input {
+        color: #000000 !important; 
+        -webkit-text-fill-color: #000000 !important; 
+        font-weight: bold !important;
+        font-size: 16px !important;
+    }
 
-    /* 💰 จุดเปลี่ยนสีช่องใส่ยอดเงิน (Number Input) */
-    div[data-testid="stNumberInput"] div[data-baseweb="input"] {
-        background-color: #fff9c4 !important; /* สีเหลืองทองอ่อน */
-        border: 2px solid #00BFFF !important; /* ขอบสีฟ้าตามธีมแอป */
+    /* 2. 💰 ช่องใส่ยอดเงิน (สีทอง VIP) - แก้ไข Selector ให้ตรงจุด */
+    div[data-testid="stNumberInput"] div[data-baseweb="base-input"] {
+        background-color: #fff9c4 !important; /* สีทองอ่อน */
+        border: 2px solid #00BFFF !important;
         border-radius: 10px !important;
     }
     div[data-testid="stNumberInput"] input {
+        background-color: transparent !important; /* ให้พื้นหลังข้างในใสเพื่อโชว์สีทอง */
         color: #000000 !important;
         font-weight: bold !important;
-        font-size: 22px !important; /* ตัวเลขใหญ่สะใจ */
-        text-align: center !important; /* จัดตัวเลขไว้ตรงกลาง */
+        font-size: 24px !important; /* เพิ่มขนาดอีกนิดให้สะใจเจ้านายค่ะ */
+        text-align: center !important;
     }
 
-    /* ปุ่มบันทึก */
+    /* 3. ปุ่มบันทึกและปุ่มล้างคำ (เขียว/แดง) */
     div[data-testid="stColumn"]:nth-child(1) div[data-testid="stButton"] button {
         background-color: #4CAF50 !important;
         color: white !important;
+        border-color: #4CAF50 !important;
+        font-weight: bold !important;
     }
     div[data-testid="stColumn"]:nth-child(2) div[data-testid="stButton"] button {
         background-color: #f44336 !important;
         color: white !important;
+        border-color: #f44336 !important;
+        font-weight: bold !important;
     }
+
+    /* 4. ปุ่ม Primary สีฟ้า (ปุ่มบันทึกลงตาราง) */
     button[kind="primary"] {
         background-color: #00BFFF !important; 
         color: white !important;
@@ -83,6 +96,11 @@ st.markdown("""
         height: 50px !important;
         font-weight: bold !important;
         font-size: 18px !important;
+        border: none !important;
+    }
+    button[kind="primary"]:hover {
+        background-color: #009acd !important; 
+        border-color: #009acd !important;
     }
     </style>
 """, unsafe_allow_html=True)
