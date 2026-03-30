@@ -55,25 +55,33 @@ st.markdown("""
     }
     div[data-testid="stTextInput"]:has(input[placeholder*="แตะที่นี่แล้วพูด"]) input {
         color: #000000 !important; 
-        -webkit-text-fill-color: #000000 !important; /* บังคับสีดำบนมือถือ */
+        -webkit-text-fill-color: #000000 !important; 
         font-weight: bold !important;
         font-size: 16px !important;
     }
 
-    /* 2. 💰 ช่องใส่ยอดเงิน (สีทอง VIP) - แก้ไขให้ดำสนิทไม่กลัวมือถือ */
+    /* 2. 💰 ช่องใส่ยอดเงิน (สีทอง VIP) - ระบบปรับความจางอัตโนมัติ */
     div[data-testid="stNumberInput"] div[data-baseweb="base-input"] {
         background-color: #fff9c4 !important;
         border: 2px solid #00BFFF !important;
         border-radius: 10px !important;
     }
+    
+    /* กรณีที่ "มีการกรอกตัวเลขแล้ว" (ชัดเจน 100%) */
     div[data-testid="stNumberInput"] input {
         background-color: transparent !important;
         color: #000000 !important;
-        -webkit-text-fill-color: #000000 !important; /* 👈 ไม้ตายแก้ตัวหนังสือขาวบนมือถือ */
+        -webkit-text-fill-color: #000000 !important;
         font-weight: bold !important;
         font-size: 24px !important;
         text-align: center !important;
-        opacity: 0.5 !important; /* บังคับความชัด 100% */
+        opacity: 1 !important; /* เข้มเต็มร้อยเมื่อมีข้อมูล */
+    }
+
+    /* กรณีที่เป็น "ค่าว่าง/ยังไม่กรอก" (โชว์ 0.00 จางๆ 50%) */
+    div[data-testid="stNumberInput"] input:placeholder-shown {
+        opacity: 0.5 !important;
+        -webkit-text-fill-color: rgba(0, 0, 0, 0.5) !important; /* สีฟอนต์จางลงด้วยเพื่อความนวล */
     }
 
     /* 3. ปุ่มบันทึกและปุ่มล้างคำ (เขียว/แดง) */
