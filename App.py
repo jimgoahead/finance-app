@@ -55,23 +55,25 @@ st.markdown("""
     }
     div[data-testid="stTextInput"]:has(input[placeholder*="แตะที่นี่แล้วพูด"]) input {
         color: #000000 !important; 
-        -webkit-text-fill-color: #000000 !important; 
+        -webkit-text-fill-color: #000000 !important; /* บังคับสีดำบนมือถือ */
         font-weight: bold !important;
         font-size: 16px !important;
     }
 
-    /* 2. 💰 ช่องใส่ยอดเงิน (สีทอง VIP) - แก้ไข Selector ให้ตรงจุด */
+    /* 2. 💰 ช่องใส่ยอดเงิน (สีทอง VIP) - แก้ไขให้ดำสนิทไม่กลัวมือถือ */
     div[data-testid="stNumberInput"] div[data-baseweb="base-input"] {
-        background-color: #fff9c4 !important; /* สีทองอ่อน */
+        background-color: #fff9c4 !important;
         border: 2px solid #00BFFF !important;
         border-radius: 10px !important;
     }
     div[data-testid="stNumberInput"] input {
-        background-color: transparent !important; /* ให้พื้นหลังข้างในใสเพื่อโชว์สีทอง */
+        background-color: transparent !important;
         color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important; /* 👈 ไม้ตายแก้ตัวหนังสือขาวบนมือถือ */
         font-weight: bold !important;
-        font-size: 24px !important; /* เพิ่มขนาดอีกนิดให้สะใจเจ้านายค่ะ */
+        font-size: 24px !important;
         text-align: center !important;
+        opacity: 1 !important; /* บังคับความชัด 100% */
     }
 
     /* 3. ปุ่มบันทึกและปุ่มล้างคำ (เขียว/แดง) */
@@ -79,13 +81,11 @@ st.markdown("""
         background-color: #4CAF50 !important;
         color: white !important;
         border-color: #4CAF50 !important;
-        font-weight: bold !important;
     }
     div[data-testid="stColumn"]:nth-child(2) div[data-testid="stButton"] button {
         background-color: #f44336 !important;
         color: white !important;
         border-color: #f44336 !important;
-        font-weight: bold !important;
     }
 
     /* 4. ปุ่ม Primary สีฟ้า (ปุ่มบันทึกลงตาราง) */
@@ -97,10 +97,6 @@ st.markdown("""
         font-weight: bold !important;
         font-size: 18px !important;
         border: none !important;
-    }
-    button[kind="primary"]:hover {
-        background-color: #009acd !important; 
-        border-color: #009acd !important;
     }
     </style>
 """, unsafe_allow_html=True)
