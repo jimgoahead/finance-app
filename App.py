@@ -352,7 +352,8 @@ if st.button("บันทึกข้อมูลลงตาราง", type="
         st.session_state.pre_chan = "🟢 K-BANK"
         st.session_state.form_reset += 1 
         if "voice_input_key" in st.session_state: del st.session_state["voice_input_key"]
-        
+        # --- ก่อนจะ rerun ให้ล้างความจำเก่าเพื่อให้ Dashboard อัปเดตยอดใหม่ทันที ---
+        st.cache_data.clear() 
         st.rerun()
 
 st.markdown("---")
