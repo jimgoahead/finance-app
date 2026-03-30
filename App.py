@@ -81,7 +81,7 @@ st.markdown("""
     /* กรณีที่เป็น "ค่าว่าง/ยังไม่กรอก" (โชว์ 0.00 จางๆ 50%) */
     div[data-testid="stNumberInput"] input:placeholder-shown {
         opacity: 0.5 !important;
-        -webkit-text-fill-color: rgba(0, 0, 0, 0.5) !important; /* สีฟอนต์จางลงด้วยเพื่อความนวล */
+        -webkit-text-fill-color: rgba(0, 0, 0, 0.7) !important; /* สีฟอนต์จางลงด้วยเพื่อความนวล */
     }
 
     /* 3. ปุ่มบันทึกและปุ่มล้างคำ (เขียว/แดง) */
