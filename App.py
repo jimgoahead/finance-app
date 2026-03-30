@@ -26,7 +26,8 @@ client = init_connection()
 SHEET_NAME = "Finance App" 
 sheet = client.open(SHEET_NAME).sheet1
 
-def load_data():
+@st.cache_data(ttl=600) # 💡 เก็บข้อมูลไว้ในเครื่อง 10 นาที ไม่ต้องโหลดใหม่ทุกรอบที่ขยับช่อง
+def load_data_cached():
     data = sheet.get_all_records()
     cols = ['ลำดับ', 'วันที่', 'รายการ', 'รายรับ', 'รายจ่าย', 'ช่องทาง', 'หมายเหตุ', 'ประเภทการจ่าย', 'จำนวนงวด', 'งวดปัจจุบัน', 'ID รายการผ่อน', 'เดือนที่จ่ายบิล']
     if data:
@@ -37,6 +38,14 @@ def load_data():
         return df
     else:
         return pd.DataFrame(columns=cols)
+
+# ฟังก์ชันสำหรับกด Refresh ข้อมูลเองแบบไม่ง้อระบบ
+def refresh_data():
+    st.cache_data.clear()
+    st.rerun()
+
+# ดึงข้อมูลมาใช้งาน (ดึงจาก Cache ถ้ามีอยู่แล้ว)
+df = load_data_cached()
 
 # ==========================================
 # การตั้งค่าหน้าเว็บและสีสัน
